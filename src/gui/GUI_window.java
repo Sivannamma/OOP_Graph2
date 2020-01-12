@@ -33,8 +33,8 @@ public class GUI_window extends JFrame implements ActionListener, MouseListener 
 	private static final long serialVersionUID = 1L;
 	int id;
 	Point3D point;
-	final static int Y_OFFSET = 200;
-	final static int X_OFFSET = 50;
+	final static int Y_OFFSET = 300;
+	final static int X_OFFSET = 400;
 	Graph_Algo graph;
 	JTextField text_src;
 	JTextField text_dest;

@@ -71,16 +71,16 @@ public class Point3D implements Serializable {
 		return _z;
 	}
 
-	public int ix() {
-		return (int) _x;
+	public double ix() {
+		return _x;
 	}
 
-	public int iy() {
-		return (int) _y;
+	public double iy() {
+		return _y;
 	}
 
-	public int iz() {
-		return (int) _z;
+	public double iz() {
+		return _z;
 	}
 
 	public void add(Point3D p) {
