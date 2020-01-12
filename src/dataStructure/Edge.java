@@ -9,20 +9,20 @@ public class Edge implements edge_data, Serializable {
 	 */
 	private static final long serialVersionUID = 1L;
 	private int src; // where the edge comes from
-	private int dst; // where the edge ends
-	private double cost;
+	private int dest; // where the edge ends
+	private double w;
 
 	public Edge(int src, int dst, double cost) {
 		if (src >= 0 && dst > 0 && cost >= 0) {
 			this.src = src;
-			this.dst = dst;
-			this.cost = cost;
+			this.dest = dst;
+			this.w = cost;
 		}
 	
 	}
 
 	public void setCost(double cost) {
-		this.cost = cost;
+		this.w = cost;
 	}
 
 	@Override
@@ -32,12 +32,12 @@ public class Edge implements edge_data, Serializable {
 
 	@Override
 	public int getDest() {
-		return this.dst;
+		return this.dest;
 	}
 
 	@Override
 	public double getWeight() {
-		return this.cost;
+		return this.w;
 	}
 
 	@Override
@@ -61,7 +61,7 @@ public class Edge implements edge_data, Serializable {
 	}
 
 	public String toString() {
-		return "[" + this.src + " ---" + this.cost + "--- " + this.dst + "]";
+		return "[" + this.src + "-->" + this.w + "-->" + this.dest + "]";
 	}
 
 }

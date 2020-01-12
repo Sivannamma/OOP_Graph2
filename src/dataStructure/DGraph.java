@@ -1,5 +1,6 @@
 package dataStructure;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.io.Serializable;
@@ -15,6 +16,30 @@ public class DGraph implements graph, Serializable {
 	private HashMap<node_data, HashMap<Integer, edge_data>> neighboors;
 	private int MC;
 	private int EdgeCount;
+	private ArrayList<Edge> Edges;
+	private ArrayList<Node> Nodes;
+
+	public DGraph(String g) {
+		this();
+		Gson gson = new Gson();
+		this.Edges = new ArrayList<Edge>();
+		this.Nodes = new ArrayList<Node>();
+		DGraph graph = gson.fromJson(g, DGraph.class);
+		setGraph(graph);
+
+	}
+
+// initializing the variable according to the parameters given from json
+	private void setGraph(DGraph graph) {
+		// adding nodes to the main hash
+		for (int i = 0; i < graph.Nodes.size(); i++) {
+			this.addNode(graph.Nodes.get(i));
+		}
+		// adding the edges to the neighboors hash
+		for (int i = 0; i < graph.Edges.size(); i++) {
+			this.connect(graph.Edges.get(i).getSrc(), graph.Edges.get(i).getDest(), graph.Edges.get(i).getWeight());
+		}
+	}
 
 	public DGraph() {
 		this.map = new HashMap<Integer, node_data>();

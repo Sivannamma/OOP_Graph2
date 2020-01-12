@@ -73,7 +73,7 @@ public class Graph_Algo implements graph_algorithms, java.io.Serializable {
 			ObjectOutputStream out = new ObjectOutputStream(file);
 
 			out.writeObject(this.current);
-			
+
 			out.close();
 			file.close();
 

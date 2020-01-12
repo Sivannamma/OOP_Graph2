@@ -9,6 +9,8 @@ import org.json.JSONObject;
 
 import Server.Game_Server;
 import Server.game_service;
+import dataStructure.DGraph;
+import dataStructure.graph;
 import oop_dataStructure.OOP_DGraph;
 import oop_dataStructure.oop_edge_data;
 import oop_dataStructure.oop_graph;
@@ -29,13 +31,19 @@ import oop_dataStructure.oop_graph;
  */
 public class SimpleGameClient {
 	public static void main(String[] a) {
-		test1();
+		int scenario_num = 2;
+		game_service game = Game_Server.getServer(scenario_num); // you have [0,23]
+		String gg = game.getGraph();
+		graph graph = new DGraph(gg);
+		//System.out.println(graph);
+		// test1();
 	}
 
 	public static void test1() {
 		int scenario_num = 2;
 		game_service game = Game_Server.getServer(scenario_num); // you have [0,23] games
 		String g = game.getGraph();
+	
 		OOP_DGraph gg = new OOP_DGraph();
 		gg.init(g);
 		String info = game.toString();
@@ -54,6 +62,7 @@ public class SimpleGameClient {
 			int src_node = 0; // arbitrary node, you should start at one of the fruits
 			for (int a = 0; a < rs; a++) {
 				game.addRobot(src_node + a);
+				System.out.println("hi ************" + game.getRobots());
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();
