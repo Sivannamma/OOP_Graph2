@@ -1,9 +1,12 @@
 package gameClient;
 
+import static org.junit.Assert.fail;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Label;
 import java.awt.Menu;
 import java.awt.MenuBar;
 import java.awt.MenuItem;
@@ -19,11 +22,15 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
+import Server.Game_Server;
+import Server.game_service;
 import algorithms.Graph_Algo;
+import dataStructure.DGraph;
 import dataStructure.edge_data;
 import dataStructure.graph;
 import dataStructure.node_data;
 import gui.GUI_window;
+import utils.Point3D;
 
 public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 
@@ -38,7 +45,7 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 	Graph_Algo graph;
 	JTextField text;
 	JButton button;
-	JLabel label;
+	Label label;
 	Dimension size;
 
 	public MyGameGUI(Graph_Algo graph) {
@@ -54,11 +61,6 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 	private void init_window() {
 		setScale();
 
-		text = new JTextField();
-		button = new JButton("                             ");
-		// prefered size for the button
-		size = button.getPreferredSize();
-
 		// the size of the window
 		this.setSize(1300, 1200);
 		// setting that the program is terminated when we close 'X' on the window as
@@ -66,9 +68,17 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		// not resizeable
 		this.setResizable(false);
+
+		this.setLayout(null);
 		// font
-		Font f = new Font("Arial", Font.BOLD, 13);
+		Font f = new Font("Arial", Font.BOLD, 15);
 		this.setFont(f);
+
+		label = new Label("Enter a level:");
+		text = new JTextField();
+		button = new JButton("                             ");
+		// prefered size for the button
+		size = button.getPreferredSize();
 
 		// menu bar
 		MenuBar menuBar = new MenuBar();
@@ -88,7 +98,7 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 		menuBar.add(game);
 
 		// button
-		this.button.setBounds(500, 20, 40, 20);
+		button.setBounds(370, 60, size.width, size.height);
 		this.button.addActionListener(this);
 		this.add(button);
 
@@ -101,9 +111,11 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 		this.text.setVisible(false);
 
 		// label of list targets
-		// this.add(label);
-//		label.setText("Please enter level number [0,23]");
-//		this.addMouseListener(this);
+		this.add(label);
+		label.setBounds(250, 5, 500, 50);
+		this.label.setVisible(false);
+		this.addMouseListener(this);
+		label.setFont(f);
 
 		repaint();
 	}
@@ -212,16 +224,51 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 		String str = e.getActionCommand();
 
 		switch (str) {
-		case "Manual Game": {
+		case "Menual Game": {
+			setUp();
 
 			break;
 		}
 		case "Automatic Game": {
+			setUp();
 
 			break;
 		}
-		}
+		case "Send": {
+			int level = 0;
+			try {
+				level = Integer.parseInt(text.getText());
+				if (level < 0 || level > 23) {
+					JOptionPane.showMessageDialog(null, "Input must be between 0-23 (include)", "Error",
+							JOptionPane.DEFAULT_OPTION);
+				} else {
+					game_service game = Game_Server.getServer(level);
+					this.graph = new Graph_Algo(new DGraph(game.getGraph()));
+				}
 
+			} catch (Exception e1) {
+				JOptionPane.showMessageDialog(null, "Input must be between 0-23 (include)", "Error",
+						JOptionPane.DEFAULT_OPTION);
+			}
+			setFalse();
+			repaint();
+			break;
+		}
+		}
+	}
+
+	private void setFalse() {
+		this.text.setText("Level");
+		this.button.setVisible(false);
+		this.label.setVisible(false);
+		this.text.setVisible(false);
+	}
+
+	private void setUp() {
+		this.button.setText("Send");
+		this.button.setVisible(true);
+		this.label.setVisible(true);
+		this.text.setVisible(true);
 	}
 
 }
