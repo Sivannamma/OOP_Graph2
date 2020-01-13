@@ -1,15 +1,21 @@
 package dataStructure;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import utils.Point3D;
 
 public class Fruit {
 	private double value;
 	private int type;
 	private Point3D point;
-	String pos;
+	private String pos;
+	private edge_data edge;
+
+	public edge_data getEdge() {
+		return edge;
+	}
+
+	public void setEdge(edge_data edge) {
+		this.edge = edge;
+	}
 
 	public double getValue() {
 		return value;
@@ -39,6 +45,7 @@ public class Fruit {
 		this.value = value;
 		this.type = type;
 		this.pos = pos;
+		this.edge = null;
 		getLocation();
 	}
 

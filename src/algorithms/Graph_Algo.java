@@ -8,9 +8,6 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.nio.file.Path;
-import java.io.Serializable;
-import java.io.*;
 import dataStructure.DGraph;
 import dataStructure.Node;
 import dataStructure.edge_data;
@@ -131,7 +128,6 @@ public class Graph_Algo implements graph_algorithms, java.io.Serializable {
 		return false;
 	}
 
-	//
 	private double sumPath() {
 		if (list == null || list.isEmpty()) {
 			return Double.POSITIVE_INFINITY;

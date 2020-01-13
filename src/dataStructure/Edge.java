@@ -1,6 +1,6 @@
 package dataStructure;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.io.Serializable;
 
 public class Edge implements edge_data, Serializable {
@@ -18,7 +18,7 @@ public class Edge implements edge_data, Serializable {
 			this.dest = dst;
 			this.w = cost;
 		}
-	
+
 	}
 
 	public void setCost(double cost) {

@@ -1,7 +1,5 @@
 package gameClient;
 
-import static org.junit.Assert.fail;
-
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -11,26 +9,17 @@ import java.awt.Label;
 import java.awt.Menu;
 import java.awt.MenuBar;
 import java.awt.MenuItem;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.image.FilteredImageSource;
-import java.awt.image.ImageFilter;
-import java.awt.image.ImageProducer;
-import java.awt.image.RGBImageFilter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -41,20 +30,13 @@ import Server.game_service;
 import algorithms.Graph_Algo;
 import dataStructure.DGraph;
 import dataStructure.Fruit;
-import dataStructure.Node;
-import dataStructure.Robot;
 import dataStructure.edge_data;
 import dataStructure.graph;
 import dataStructure.node_data;
-import gui.GUI_window;
-import utils.Point3D;
 
 public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 
-	/**
-	 * 
-	 */
-	private static final double EPS = 0.00001;
+	private static final double EPS = 0.0000001;
 	private static final long serialVersionUID = 1L;
 	private double y_min;
 	private double y_max;
@@ -67,7 +49,9 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 	Dimension size;
 	private ArrayList<Fruit> fruit;
 	private ArrayList<Image> image;
-	private boolean isFruit;
+	private int gameMode; // - one for manual, two for automatic
+	private boolean setRobots; // when true, we activate the mouse lisiten so the user place the robots
+	private GameServer games;
 
 	public MyGameGUI(Graph_Algo graph) {
 		this.graph = graph;
@@ -80,8 +64,9 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 	}
 
 	private void init_window() {
-		isFruit = true;
 		setScale();
+		setRobots = false;
+		gameMode = 0; // default setting
 		fruit = new ArrayList<Fruit>();
 		// the size of the window
 		this.setSize(1300, 1200);
@@ -142,6 +127,10 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 		repaint();
 	}
 
+	/**
+	 * this two functions, scaleX and scaleY are returning for each data the
+	 * location it needs to be on our jframe window.
+	 */
 	private double scaleX(double data) {
 		int canvasX = 1110;
 		int offSet = 90;
@@ -156,6 +145,12 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 		return res;
 	}
 
+	/**
+	 * this function setScale going over our graph with every location (x,y) and
+	 * saving the x max\min value and the same for y. this function is used once for
+	 * each graph, and so we can use the data taken from it in the two upper
+	 * functions.
+	 */
 	private void setScale() {
 		boolean flag = true; // first time set only
 		x_max = 0;
@@ -230,31 +225,25 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 
 	@Override
 	public void mouseClicked(MouseEvent arg0) {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public void mouseEntered(MouseEvent arg0) {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public void mouseExited(MouseEvent arg0) {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public void mousePressed(MouseEvent arg0) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void mouseReleased(MouseEvent arg0) {
-		// TODO Auto-generated method stub
 
 	}
 
@@ -262,14 +251,15 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 	public void actionPerformed(ActionEvent e) {
 
 		String str = e.getActionCommand();
-
 		switch (str) {
 		case "Menual Game": {
+			gameMode = 1; // setting game mode
 			setUp();
-
 			break;
 		}
 		case "Automatic Game": {
+
+			gameMode = 2; // setting game mode
 			setUp();
 
 			break;
@@ -282,10 +272,11 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 					JOptionPane.showMessageDialog(null, "Input must be between 0-23 (include)", "Error",
 							JOptionPane.DEFAULT_OPTION);
 				} else {
-					setFruit_Robot(level);
+					setFruit_Robot(level); // function to set the robots and fruits
+					setGameServer(level);
+					setGame(level);
 					setFalse();
 					repaint();
-					isFruit = false;
 				}
 			} catch (Exception e1) {
 				JOptionPane.showMessageDialog(null, "Something went wrong", "Error", JOptionPane.DEFAULT_OPTION);
@@ -295,12 +286,50 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 		}
 	}
 
+	private void setGame(int level) {
+		if (gameMode == 1) // automatic mode (we place the robots)
+		{
+			autoPlaceRobot();
+		} else // means manual game mode
+		{
+			setRobots = true; // we activate the mouse lisiten
+		}
+
+	}
+
+	/**
+	 * in this function we find the best position in order to place the robots in
+	 * the game.
+	 */
+
+	private void autoPlaceRobot() {
+
+	}
+
+	private void setGameServer(int level) throws JSONException {
+		game_service game = Game_Server.getServer(level);
+		// creating json object
+		String ans = game.toString();
+
+		JSONObject json = new JSONObject(ans);
+		// getting from the json object the GameServer object itself
+
+		JSONObject gamey = json.getJSONObject("GameServer");
+		int fruit = gamey.getInt("fruits");
+		int moves = gamey.getInt("moves");
+		int grade = gamey.getInt("grade");
+		int robots = gamey.getInt("robots");
+		String graph = gamey.getString("graph");
+		games = new GameServer(fruit, moves, grade, robots, graph);
+
+	}
+
 	private void setFruit_Robot(int level) throws JSONException {
 		game_service game = Game_Server.getServer(level);
 		this.graph = new Graph_Algo(new DGraph(game.getGraph()));
 
 		// Fruit initializing
-		this.fruit.clear();
+		this.fruit.clear(); // clearing the list so every level change the fruits changes as well
 
 		for (String fru : game.getFruits()) {
 			// creating json object
@@ -311,10 +340,58 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 			String pos = fruity.getString("pos");
 			double value = fruity.getDouble("value");
 			int type = fruity.getInt("type");
+			// adding to the arraylist of fruits
 			fruit.add(new Fruit(value, type, pos));
+			connect_fruitsAndEdge(); // calling the function to connect the fruits to the right place
 		}
 	}
 
+	/**
+	 * this function is for setting each edge with the amount of fruits it has going
+	 * over all of the fruits and fiding the place for them in the edges of the
+	 * graph
+	 */
+
+	private void connect_fruitsAndEdge() {
+		// iterating over the fruits
+		for (Fruit f : this.fruit) {
+			// iterating over the nodes in the graph
+			for (node_data node : this.graph.getGraph().getV()) {
+				// iterating over spesific node neighboors
+				for (edge_data edge : this.graph.getGraph().getE(node.getKey())) {
+
+					if (isOnEdge(node, edge, f)) {// if return true, means this edge connected to the fruit
+						f.setEdge(edge);
+					}
+				}
+			}
+		}
+	}
+
+	private boolean isOnEdge(node_data node, edge_data edge, Fruit f) {
+		double fX = f.getLocation().ix();
+		double fY = f.getLocation().iy();
+		if (!isOn(node.getLocation().ix(), this.graph.getGraph().getNode(edge.getDest()).getLocation().ix(), fX))
+			return false;
+		if (!isOn(node.getLocation().iy(), this.graph.getGraph().getNode(edge.getDest()).getLocation().iy(), fY))
+			return false;
+
+		return true;
+	}
+
+	private boolean isOn(double src, double dest, double fruit) {
+		if (Math.abs(fruit - dest) + Math.abs(fruit - src) == src + dest + EPS)
+			return true;
+		if (Math.abs(fruit - dest) + Math.abs(fruit - src) == src + dest - EPS)
+			return true;
+		return false;
+	}
+
+	/**
+	 * setFalse - function that sets the buttons, labels and test field to false.
+	 * setUp - making visibilty to true, inorder to use them in the gui window.
+	 * those function in use after user uses in the gui window.
+	 */
 	private void setFalse() {
 		this.text.setText("Level");
 		this.button.setVisible(false);

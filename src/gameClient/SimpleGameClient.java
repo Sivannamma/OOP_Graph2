@@ -36,12 +36,8 @@ import oop_dataStructure.oop_graph;
 public class SimpleGameClient {
 	public static void main(String[] a) {
 		int scenario_num = 23;
-		Gson gso=new Gson();
+		Gson gso = new Gson();
 		game_service game = Game_Server.getServer(scenario_num); // you have [0,23]
-//		for (String fru : game.getFruits()) {
-//			Fruit f=gso.fromJson(fru, Fruit.class);
-//			System.out.println(fru);
-//		}
 		String gg = game.getGraph();
 		graph temp = new DGraph(gg);
 		MyGameGUI wind = new MyGameGUI(temp);
@@ -73,7 +69,7 @@ public class SimpleGameClient {
 			int src_node = 0; // arbitrary node, you should start at one of the fruits
 			for (int a = 0; a < rs; a++) {
 				game.addRobot(src_node + a);
-				System.out.println("hi ************" + game.getRobots());
+
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();
