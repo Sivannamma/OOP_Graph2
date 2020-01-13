@@ -212,8 +212,8 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 			Image image = icon.getImage();
 			g1.drawImage(image, (int) x, (int) y, 25, 25, this);
 			count--;
+
 		}
-		System.out.println(games.getRobots());
 	}
 
 	private void drawGraph(Graphics g1) {
@@ -299,7 +299,6 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 			break;
 		}
 		case "Automatic Game": {
-
 			gameMode = 2; // setting game mode
 			setUp();
 
@@ -314,9 +313,11 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 							JOptionPane.DEFAULT_OPTION);
 				} else {
 					setFruit(level); // function to set the fruits
+					setScale();
 					setGameServer(level);
 					setGame(level);
-					setLevel = true;
+					setLevel = true; // for the paint of the robot
+
 					setFalse();
 					repaint();
 				}
@@ -376,7 +377,7 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 	private void setFruit(int level) throws JSONException {
 		game_service game = Game_Server.getServer(level);
 		this.graph = new Graph_Algo(new DGraph(game.getGraph()));
-
+		setScale();
 		// Fruit initializing
 		this.fruit.clear(); // clearing the list so every level change the fruits changes as well
 
@@ -391,8 +392,8 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 			int type = fruity.getInt("type");
 			// adding to the arraylist of fruits
 			fruit.add(new Fruit(value, type, pos));
-			connect_fruitsAndEdge(); // calling the function to connect the fruits to the right place
 		}
+		connect_fruitsAndEdge(); // calling the function to connect the fruits to the right place
 	}
 
 	/**
@@ -402,8 +403,10 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 	 */
 
 	private void connect_fruitsAndEdge() {
+		boolean isFound = false;
 		// iterating over the fruits
 		for (Fruit f : this.fruit) {
+			isFound = false;
 			// iterating over the nodes in the graph
 			for (node_data node : this.graph.getGraph().getV()) {
 				// iterating over spesific node neighboors
@@ -411,8 +414,14 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 
 					if (isOnEdge(node, edge, f)) {// if return true, means this edge connected to the fruit
 						f.setEdge(edge);
+						isFound = true; // if we found the right edge for the fruit, we can continue
+						// to the next fruit
 					}
+					if (isFound)
+						break;
 				}
+				if (isFound)
+					break;
 			}
 		}
 	}
