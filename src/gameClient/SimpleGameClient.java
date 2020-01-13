@@ -7,9 +7,12 @@ import java.util.List;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.google.gson.Gson;
+
 import Server.Game_Server;
 import Server.game_service;
 import dataStructure.DGraph;
+import dataStructure.Fruit;
 import dataStructure.graph;
 import gui.GUI_window;
 import oop_dataStructure.OOP_DGraph;
@@ -33,13 +36,16 @@ import oop_dataStructure.oop_graph;
 public class SimpleGameClient {
 	public static void main(String[] a) {
 		int scenario_num = 23;
+		Gson gso=new Gson();
 		game_service game = Game_Server.getServer(scenario_num); // you have [0,23]
+//		for (String fru : game.getFruits()) {
+//			Fruit f=gso.fromJson(fru, Fruit.class);
+//			System.out.println(fru);
+//		}
 		String gg = game.getGraph();
-		System.out.println(game.getGraph());
 		graph temp = new DGraph(gg);
 		MyGameGUI wind = new MyGameGUI(temp);
 		wind.setVisible(true);
-		// System.out.println(graph);
 		// test1();
 	}
 
@@ -47,6 +53,7 @@ public class SimpleGameClient {
 		int scenario_num = 2;
 		game_service game = Game_Server.getServer(scenario_num); // you have [0,23] games
 		String g = game.getGraph();
+		System.out.println(game.getFruits());
 
 		OOP_DGraph gg = new OOP_DGraph();
 		gg.init(g);

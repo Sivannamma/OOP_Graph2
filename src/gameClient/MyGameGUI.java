@@ -6,26 +6,43 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.Label;
 import java.awt.Menu;
 import java.awt.MenuBar;
 import java.awt.MenuItem;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.image.FilteredImageSource;
+import java.awt.image.ImageFilter;
+import java.awt.image.ImageProducer;
+import java.awt.image.RGBImageFilter;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import com.google.gson.Gson;
+
 import Server.Game_Server;
 import Server.game_service;
 import algorithms.Graph_Algo;
 import dataStructure.DGraph;
+import dataStructure.Fruit;
+import dataStructure.Node;
+import dataStructure.Robot;
 import dataStructure.edge_data;
 import dataStructure.graph;
 import dataStructure.node_data;
@@ -37,6 +54,7 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 	/**
 	 * 
 	 */
+	private static final double EPS = 0.00001;
 	private static final long serialVersionUID = 1L;
 	private double y_min;
 	private double y_max;
@@ -47,6 +65,9 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 	JButton button;
 	Label label;
 	Dimension size;
+	private ArrayList<Fruit> fruit;
+	private ArrayList<Image> image;
+	private boolean isFruit;
 
 	public MyGameGUI(Graph_Algo graph) {
 		this.graph = graph;
@@ -59,8 +80,9 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 	}
 
 	private void init_window() {
+		isFruit = true;
 		setScale();
-
+		fruit = new ArrayList<Fruit>();
 		// the size of the window
 		this.setSize(1300, 1200);
 		// setting that the program is terminated when we close 'X' on the window as
@@ -158,6 +180,8 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 	public void paint(Graphics g1) {
 		super.paint(g1);
 		g1.setFont(new Font("David", 10, 14));
+
+		// drawing nodes and edges :
 		if (this.graph.getGraph() != null) {
 			utils.Point3D current = null;
 			for (node_data key : this.graph.getGraph().getV()) {
@@ -186,6 +210,22 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 			}
 		}
 
+		this.image = new ArrayList<Image>();
+		for (Fruit f : this.fruit) {
+			double x = scaleX(f.getLocation().ix());
+			double y = scaleY(f.getLocation().iy());
+			String img = "";
+			if (f.getType() == 1)// if its an apple
+				img = "apple.jpg";
+			else // if its a banana
+				img = "banana.png";
+			// drawing the fruits:
+			ImageIcon icon = new ImageIcon(img);
+			Image image = icon.getImage();
+			// adding to array of imgages, so we can delete them after changing levels
+			this.image.add(image);
+			g1.drawImage(image, (int) x, (int) y, 25, 25, this);
+		}
 	}
 
 	@Override
@@ -242,18 +282,36 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 					JOptionPane.showMessageDialog(null, "Input must be between 0-23 (include)", "Error",
 							JOptionPane.DEFAULT_OPTION);
 				} else {
-					game_service game = Game_Server.getServer(level);
-					this.graph = new Graph_Algo(new DGraph(game.getGraph()));
+					setFruit_Robot(level);
+					setFalse();
+					repaint();
+					isFruit = false;
 				}
-
 			} catch (Exception e1) {
-				JOptionPane.showMessageDialog(null, "Input must be between 0-23 (include)", "Error",
-						JOptionPane.DEFAULT_OPTION);
+				JOptionPane.showMessageDialog(null, "Something went wrong", "Error", JOptionPane.DEFAULT_OPTION);
 			}
-			setFalse();
-			repaint();
 			break;
 		}
+		}
+	}
+
+	private void setFruit_Robot(int level) throws JSONException {
+		game_service game = Game_Server.getServer(level);
+		this.graph = new Graph_Algo(new DGraph(game.getGraph()));
+
+		// Fruit initializing
+		this.fruit.clear();
+
+		for (String fru : game.getFruits()) {
+			// creating json object
+			JSONObject json = new JSONObject(fru);
+			// getting from the json object the Fruit object itself
+			JSONObject fruity = json.getJSONObject("Fruit");
+			// getting the data needed for a fruit variable
+			String pos = fruity.getString("pos");
+			double value = fruity.getDouble("value");
+			int type = fruity.getInt("type");
+			fruit.add(new Fruit(value, type, pos));
 		}
 	}
 

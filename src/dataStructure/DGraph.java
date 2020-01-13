@@ -22,8 +22,6 @@ public class DGraph implements graph, Serializable {
 	public DGraph(String g) {
 		this();
 		Gson gson = new Gson();
-		this.Edges = new ArrayList<Edge>();
-		this.Nodes = new ArrayList<Node>();
 		DGraph graph = gson.fromJson(g, DGraph.class);
 		setGraph(graph);
 
