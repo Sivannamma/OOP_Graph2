@@ -47,11 +47,12 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 	JButton button;
 	Label label;
 	Dimension size;
+	private boolean setLevel;
 	private ArrayList<Fruit> fruit;
-	private ArrayList<Image> image;
 	private int gameMode; // - one for manual, two for automatic
 	private boolean setRobots; // when true, we activate the mouse lisiten so the user place the robots
 	private GameServer games;
+	private boolean robo; // if to draw robots
 
 	public MyGameGUI(Graph_Algo graph) {
 		this.graph = graph;
@@ -64,6 +65,7 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 	}
 
 	private void init_window() {
+		setLevel = false;
 		setScale();
 		setRobots = false;
 		gameMode = 0; // default setting
@@ -175,7 +177,46 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 	public void paint(Graphics g1) {
 		super.paint(g1);
 		g1.setFont(new Font("David", 10, 14));
+		drawGraph(g1); // drawing the graph
+		drawFruits(g1); // drawing fruits
+		if (setLevel) {
+			if (robo)
+				drawRobots(g1); // drawing robots
+			else {
+				drawRobots(g1); // drawing robots
+				drawRandomRobo(g1);
+			}
+		}
+	}
 
+	private void drawRandomRobo(Graphics g1) {
+		int extra = games.getRobots() - fruit.size(); // this variable says how much extra robots
+
+	}
+
+	/**
+	 * this functions gets from each fruit the edge that it sits on. each edge has
+	 * the src of the edge, and so we want to place the robots there. so we go to
+	 * our graph, get the spesific node by the gey, and get its location, and then
+	 * we place the robot there.
+	 */
+	private void drawRobots(Graphics g1) {
+		int count = games.getRobots();
+		for (Fruit f : this.fruit) {
+			if (count == 0)
+				break;
+			double x = scaleX(this.graph.getGraph().getNode(f.getEdge().getSrc()).getLocation().ix());
+			double y = scaleY(this.graph.getGraph().getNode(f.getEdge().getSrc()).getLocation().iy());
+			String img = "robot.png";
+			ImageIcon icon = new ImageIcon(img);
+			Image image = icon.getImage();
+			g1.drawImage(image, (int) x, (int) y, 25, 25, this);
+			count--;
+		}
+		System.out.println(games.getRobots());
+	}
+
+	private void drawGraph(Graphics g1) {
 		// drawing nodes and edges :
 		if (this.graph.getGraph() != null) {
 			utils.Point3D current = null;
@@ -204,8 +245,9 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 				}
 			}
 		}
+	}
 
-		this.image = new ArrayList<Image>();
+	private void drawFruits(Graphics g1) {
 		for (Fruit f : this.fruit) {
 			double x = scaleX(f.getLocation().ix());
 			double y = scaleY(f.getLocation().iy());
@@ -218,7 +260,6 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 			ImageIcon icon = new ImageIcon(img);
 			Image image = icon.getImage();
 			// adding to array of imgages, so we can delete them after changing levels
-			this.image.add(image);
 			g1.drawImage(image, (int) x, (int) y, 25, 25, this);
 		}
 	}
@@ -272,9 +313,10 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 					JOptionPane.showMessageDialog(null, "Input must be between 0-23 (include)", "Error",
 							JOptionPane.DEFAULT_OPTION);
 				} else {
-					setFruit_Robot(level); // function to set the robots and fruits
+					setFruit(level); // function to set the fruits
 					setGameServer(level);
 					setGame(level);
+					setLevel = true;
 					setFalse();
 					repaint();
 				}
@@ -290,6 +332,7 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 		if (gameMode == 1) // automatic mode (we place the robots)
 		{
 			autoPlaceRobot();
+			repaint();
 		} else // means manual game mode
 		{
 			setRobots = true; // we activate the mouse lisiten
@@ -303,7 +346,13 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 	 */
 
 	private void autoPlaceRobot() {
-
+		if (games.getRobots() - fruit.size() <= 0) { // means we have more fruits that robots or about the same amount.
+			robo = true;
+			repaint();
+		} else { // means theres more robots that fruits
+			robo = false;
+			repaint();
+		}
 	}
 
 	private void setGameServer(int level) throws JSONException {
@@ -324,7 +373,7 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 
 	}
 
-	private void setFruit_Robot(int level) throws JSONException {
+	private void setFruit(int level) throws JSONException {
 		game_service game = Game_Server.getServer(level);
 		this.graph = new Graph_Algo(new DGraph(game.getGraph()));
 
@@ -380,9 +429,13 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 	}
 
 	private boolean isOn(double src, double dest, double fruit) {
-		if (Math.abs(fruit - dest) + Math.abs(fruit - src) == src + dest + EPS)
+//		System.out.println(Math.abs(fruit - dest) + Math.abs(fruit - src));
+//		System.out.println(dest - src);
+		if (Math.abs(fruit - dest) + Math.abs(fruit - src) == Math.abs(dest - src))
 			return true;
-		if (Math.abs(fruit - dest) + Math.abs(fruit - src) == src + dest - EPS)
+		if (Math.abs(fruit - dest) + Math.abs(fruit - src) == Math.abs(dest - src) + EPS)
+			return true;
+		if (Math.abs(fruit - dest) + Math.abs(fruit - src) == Math.abs(dest - src) - EPS)
 			return true;
 		return false;
 	}
