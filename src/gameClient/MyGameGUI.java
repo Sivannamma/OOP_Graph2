@@ -33,10 +33,11 @@ import dataStructure.Fruit;
 import dataStructure.edge_data;
 import dataStructure.graph;
 import dataStructure.node_data;
+import utils.Point3D;
 
 public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 
-	private static final double EPS = 0.0000001;
+	private static final double EPS = 0.001 * 0.001;
 	private static final long serialVersionUID = 1L;
 	private double y_min;
 	private double y_max;
@@ -53,6 +54,7 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 	private boolean setRobots; // when true, we activate the mouse lisiten so the user place the robots
 	private GameServer games;
 	private boolean robo; // if to draw robots
+	private game_service game;
 
 	public MyGameGUI(Graph_Algo graph) {
 		this.graph = graph;
@@ -212,6 +214,7 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 			Image image = icon.getImage();
 			g1.drawImage(image, (int) x, (int) y, 25, 25, this);
 			count--;
+			game.addRobot(f.getEdge().getSrc());
 
 		}
 	}
@@ -312,9 +315,10 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 					JOptionPane.showMessageDialog(null, "Input must be between 0-23 (include)", "Error",
 							JOptionPane.DEFAULT_OPTION);
 				} else {
-					setFruit(level); // function to set the fruits
+					this.game = Game_Server.getServer(level);
+					setFruit(); // function to set the fruits
 					setScale();
-					setGameServer(level);
+					setGameServer();
 					setGame(level);
 					setLevel = true; // for the paint of the robot
 
@@ -356,8 +360,7 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 		}
 	}
 
-	private void setGameServer(int level) throws JSONException {
-		game_service game = Game_Server.getServer(level);
+	private void setGameServer() throws JSONException {
 		// creating json object
 		String ans = game.toString();
 
@@ -374,8 +377,7 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 
 	}
 
-	private void setFruit(int level) throws JSONException {
-		game_service game = Game_Server.getServer(level);
+	private void setFruit() throws JSONException {
 		this.graph = new Graph_Algo(new DGraph(game.getGraph()));
 		setScale();
 		// Fruit initializing
@@ -426,25 +428,22 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener {
 		}
 	}
 
+	/**
+	 * this function is help function in order to determine if a fruit is sitting on
+	 * a certain edge we check if its the right edge by simple distance using EPS if
+	 * src.distance(dest) is about the same of src.distance(f) + f.distance(dest) we
+	 * know its the right edge
+	 */
+
 	private boolean isOnEdge(node_data node, edge_data edge, Fruit f) {
-		double fX = f.getLocation().ix();
-		double fY = f.getLocation().iy();
-		if (!isOn(node.getLocation().ix(), this.graph.getGraph().getNode(edge.getDest()).getLocation().ix(), fX))
-			return false;
-		if (!isOn(node.getLocation().iy(), this.graph.getGraph().getNode(edge.getDest()).getLocation().iy(), fY))
-			return false;
-
-		return true;
-	}
-
-	private boolean isOn(double src, double dest, double fruit) {
-//		System.out.println(Math.abs(fruit - dest) + Math.abs(fruit - src));
-//		System.out.println(dest - src);
-		if (Math.abs(fruit - dest) + Math.abs(fruit - src) == Math.abs(dest - src))
-			return true;
-		if (Math.abs(fruit - dest) + Math.abs(fruit - src) == Math.abs(dest - src) + EPS)
-			return true;
-		if (Math.abs(fruit - dest) + Math.abs(fruit - src) == Math.abs(dest - src) - EPS)
+		Point3D srcP = node.getLocation();
+		Point3D desrP = this.graph.getGraph().getNode(edge.getDest()).getLocation();
+		double dist = srcP.distance2D(desrP); // the distance between src--->dest
+		// the distance between src--->fruit + fruit---->dest
+		double ans = srcP.distance2D(f.getLocation()) + f.getLocation().distance2D(desrP);
+		// if its in the right range, return true; else means this edge isnt the fruit
+		// edge
+		if (dist > ans - EPS)
 			return true;
 		return false;
 	}
