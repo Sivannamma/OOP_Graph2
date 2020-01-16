@@ -38,11 +38,12 @@ public class SimpleGameClient {
 		int scenario_num = 23;
 		Gson gso = new Gson();
 		game_service game = Game_Server.getServer(scenario_num); // you have [0,23]
+
 		String gg = game.getGraph();
 		graph temp = new DGraph(gg);
 		MyGameGUI wind = new MyGameGUI(temp);
 		wind.setVisible(true);
-//		test1();
+	//	test1();
 	}
 
 	public static void test1() {
@@ -92,6 +93,8 @@ public class SimpleGameClient {
 	 */
 	private static void moveRobots(game_service game, oop_graph gg) {
 		List<String> log = game.move();
+//		System.out.println("*************************");
+//		System.out.println(log);
 		if (log != null) {
 			long t = game.timeToEnd();
 			for (int i = 0; i < log.size(); i++) {

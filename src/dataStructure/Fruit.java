@@ -8,6 +8,15 @@ public class Fruit {
 	private Point3D point;
 	private String pos;
 	private edge_data edge;
+	private boolean isVisited;
+
+	public boolean isVisited() {
+		return isVisited;
+	}
+
+	public void setVisited(boolean isVisited) {
+		this.isVisited = isVisited;
+	}
 
 	public edge_data getEdge() {
 		return edge;
