@@ -13,7 +13,7 @@ public class Edge implements edge_data, Serializable {
 	private double w;
 
 	public Edge(int src, int dst, double cost) {
-		if (src >= 0 && dst > 0 && cost >= 0) {
+		if (src >= 0 && dst >= 0 && cost >= 0) {
 			this.src = src;
 			this.dest = dst;
 			this.w = cost;

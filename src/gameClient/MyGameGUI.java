@@ -40,9 +40,9 @@ import dataStructure.node_data;
 import utils.Point3D;
 
 public class MyGameGUI extends JFrame implements ActionListener, MouseListener, GameListener {
-
 	private static final double EPS = 0.001 * 0.001;
 	private static final long serialVersionUID = 1L;
+	boolean flag = false;
 	GameClient gameClient;
 	private double y_min;
 	private double y_max;
@@ -52,6 +52,7 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 	JTextField text;
 	JButton button;
 	Label label;
+	boolean flagFruit = true;
 	Dimension size;
 	private HashMap<Integer, Fruit> fruitss;
 	private int gameMode; // - one for manual, two for automatic
@@ -59,6 +60,13 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 	private boolean setRobots; // when true, we activate the mouse lisiten so the user place the robots
 	private GameServer games;
 	private game_service game;
+	boolean paintOnce;
+	boolean flagRobot = true;
+
+	public MyGameGUI() {
+		this.graph = null;
+		init_window();
+	}
 
 	public MyGameGUI(Graph_Algo graph) {
 		this.graph = graph;
@@ -72,6 +80,7 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 
 	private void init_window() {
 		setScale();
+		paintOnce = true;
 		setRobots = false;
 		fruitss = new HashMap<Integer, Fruit>();
 		gameMode = 0; // default setting
@@ -160,6 +169,8 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 	 * functions.
 	 */
 	private void setScale() {
+		if (this.graph == null)
+			return;
 		boolean flag = true; // first time set only
 		x_max = 0;
 		y_max = 0;
@@ -203,6 +214,7 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 	public void paint(Graphics g1) {
 		super.paint(g1);
 		g1.setFont(new Font("David", 10, 14));
+		// if (paintOnce)
 		drawGraph(g1); // drawing the graph
 		drawFruits(g1); // drawing fruits
 		drawRobots(g1); // drawing robots
@@ -215,10 +227,6 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 	 * we place the robot there.
 	 */
 	private void drawRobots(Graphics g1) {
-		if (gameMode != 0) {
-			Thread thread = new Thread();
-			thread.run();
-		}
 		// itreating through the hashmap of the robots, painting them in their src
 		for (Integer r : this.robot.keySet()) {
 			double x = scaleX(this.robot.get(r).getLocation().ix());
@@ -231,6 +239,8 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 	}
 
 	private void drawGraph(Graphics g1) {
+		if (this.graph == null) // if there is nothing to draw
+			return;
 		// drawing nodes and edges :
 		if (this.graph.getGraph() != null) {
 			utils.Point3D current = null;
@@ -262,7 +272,6 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 	}
 
 	private void drawFruits(Graphics g1) {
-
 		for (Integer i : fruitss.keySet()) {
 			double x = scaleX(fruitss.get(i).getLocation().ix());
 			double y = scaleY(fruitss.get(i).getLocation().iy());
@@ -277,21 +286,6 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 			// adding to array of imgages, so we can delete them after changing levels
 			g1.drawImage(image, (int) x, (int) y, 25, 25, this);
 		}
-
-//		for (Fruit f : this.fruit) {
-//			double x = scaleX(f.getLocation().ix());
-//			double y = scaleY(f.getLocation().iy());
-//			String img = "";
-//			if (f.getType() == 1)// if its an apple
-//				img = "apple.jpg";
-//			else // if its a banana
-//				img = "banana.png";
-//			// drawing the fruits:
-//			ImageIcon icon = new ImageIcon(img);
-//			Image image = icon.getImage();
-//			// adding to array of imgages, so we can delete them after changing levels
-//			g1.drawImage(image, (int) x, (int) y, 25, 25, this);
-//		}
 	}
 
 	@Override
@@ -341,16 +335,18 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 					JOptionPane.showMessageDialog(null, "Input must be between 0-23 (include)", "Error",
 							JOptionPane.DEFAULT_OPTION);
 				} else {
-					// init this graph to the toString of getGraph, tconstructor we have in DGraph
-
-					gameClient = new GameClient(level);
-					setScale();
-					gameClient.addListener(this);
 					setFalse();
 					if (gameMode == 2) // automatic mode (we place the robots)
 					{
 						this.button.setVisible(true);
 						this.button.setText("Start");
+						gameClient = new GameClient(level);
+						String gg = gameClient.getGraph();
+						graph temp = new DGraph(gg);
+						// init this graph to the toString of getGraph we got from the server
+						this.graph = new Graph_Algo(temp);
+						setScale(); // set the scale of the new graph appearing on the window
+						gameClient.addListener(this);
 					} else // means manual game mode
 					{
 						setRobots = true; // we activate the mouse lisiten
@@ -369,10 +365,12 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 			} catch (JSONException e1) {
 				e1.printStackTrace();
 			}
-			JOptionPane.showMessageDialog(null, "GAME OVER : " + games.getGrade(), "Game", JOptionPane.DEFAULT_OPTION);
+			// JOptionPane.showMessageDialog(null, "GAME OVER : " + games.getGrade(),
+			// "Game", JOptionPane.DEFAULT_OPTION);
 			break;
 		}
 		}
+		repaint();
 	}
 
 	public GameServer setGameServer(game_service game, GameServer games) throws JSONException {
@@ -404,40 +402,7 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 		setRobotSrc(); // setting the robots src's
 	}
 
-	private void moveRobot(ArrayList<node_data> list, Robot robot2, game_service gamee) throws JSONException {
-		long start = System.currentTimeMillis(); // to massure how often we call the game.move function
-		// starting with 1, because our robot is currently on the first node of the list
-		for (int i = 0; i < list.size(); i++) {
-//			if (robot2.getDest() == -1) {
-			node_data temp = list.get(i);
-			int goTo = temp.getKey();
-			robot2.setLocation(temp.getLocation());
-			robot2.setSrc(temp.getKey());
-			int id = robot2.getId();
-			gamee.chooseNextEdge(id, goTo);
-			gamee.move();
-			if (System.currentTimeMillis() - start >= (1000 / 6)) {
-				updateGUI(gamee.getRobots(), gamee.getFruits());
-				start = System.currentTimeMillis();
-			}
-//			} else {
-//				i = i - 1;
-//				gamee.move();
-//				setRobot(gamee.getRobots());
-//			}
-
-		}
-	}
-//	public void moving_robo(node_,Robot robo,game_service gamee) throws JSONException{
-//		node_data temp = list.get(i);
-//		int goTo = temp.getKey();
-//		robot2.setLocation(temp.getLocation());
-//		robot2.setSrc(temp.getKey());
-//		int id = robot2.getId();
-//		gamee.chooseNextEdge(id, goTo);
-//	}
-
-	private void setRobotSrc() {
+	public void setRobotSrc() {
 		int i = 0;
 		for (Integer r : this.robot.keySet()) {
 			if (i < this.fruitss.size()) {
@@ -472,27 +437,46 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 			int src = roby.getInt("src");
 			int dest = roby.getInt("dest");
 			String pos = roby.getString("pos");
-			robot.put(id, new Robot(id, value, speed, src, dest, pos));
+			if (flagRobot) {
+				robot.put(id, new Robot(id, value, speed, src, dest, pos));
+			} else // constructor with list,and update it.
+			{
+				robot.get(id).setDest(dest);
+				robot.get(id).setSpeed(speed);
+				robot.get(id).setSrc(src);
+				robot.get(id).setPos(pos);
+				robot.get(id).setValue(value);
+			}
 		}
+		flagRobot = false;
 	}
 
 	private void setFruit(List<String> fruits) throws JSONException {
 		int i = 0;
 		for (String fru : fruits) {
-
 			// creating json object
 			JSONObject json = new JSONObject(fru);
 			// getting from the json object the Fruit object itself
 			JSONObject fruity = json.getJSONObject("Fruit");
 			// getting the data needed for a fruit variable
 			String pos = fruity.getString("pos");
+			if (!fruitss.isEmpty() && flag) {
+				if (fruitss.get(i).getPos().equals(pos))
+					continue;
+			}
 			double value = fruity.getDouble("value");
 			int type = fruity.getInt("type");
-			// adding to the arraylist of fruits
-			// fruit.add(new Fruit(value, type, pos));
-			fruitss.put(i++, new Fruit(value, type, pos));
+			// adding to the hashmap of fruits
+			if (flagFruit)
+				fruitss.put(i++, new Fruit(value, type, pos));
+			else {
+				fruitss.get(i++).setPos(pos);
+				fruitss.get(i++).setValue(value);
+				fruitss.get(i++).setType(type);
+			}
 
 		}
+		flag = true;
 		connect_fruitsAndEdge(); // calling the function to connect the fruits to the right place
 	}
 
@@ -564,42 +548,35 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 
 	@Override
 	public void updateGUI(List<String> robots, List<String> fruits) throws JSONException {
-
 		setFruit(fruits);
 		setRobot(robots);
 		repaint();
+		paintOnce = false;
 	}
 
 	@Override
 	public ArrayList<node_data> auto_mode(game_service game, int i) throws JSONException {
 		setFruit(game.getFruits());
 		ArrayList<node_data> list = new ArrayList<node_data>();
-		// for (Integer r : this.robot.keySet()) {
-
 		for (Integer fru : this.fruitss.keySet()) {
 			if (this.fruitss.get(fru).isVisited())
 				continue;
-			if (this.fruitss.get(fru).getType() == -1) {
+			this.fruitss.get(fru).setVisited(true);
+			if (this.fruitss.get(fru).getType() == -1) { // banana
 				list = (ArrayList<node_data>) this.graph.shortestPath(this.robot.get(i).getSrc(),
 						this.fruitss.get(fru).getEdge().getSrc());
 				list.remove(list.size() - 1);
-			} else
+			} else {
 				list = (ArrayList<node_data>) this.graph.shortestPath(this.robot.get(i).getSrc(),
-						this.fruitss.get(fru).getEdge().getDest());
-			if (list == null)
-				continue;
-			else {
-				this.fruitss.get(fru).setVisited(true);
-				// adding the last node to the list which is the node of the dest of the fruit
-				this.graph.reverse(list);
+						this.fruitss.get(fru).getEdge().getSrc());
 				list.add(this.graph.getGraph().getNode(this.fruitss.get(fru).getEdge().getDest()));
-				// moveRobot(list, this.robot.get(i), game);
-				return list;
-
 			}
+			// adding the last node to the list which is the node of the dest of the fruit
+			this.graph.reverse(list);
+			list.add(this.graph.getGraph().getNode(this.fruitss.get(fru).getEdge().getDest()));
+			return list;
 
 		}
-		// }
 		return list;
 
 	}

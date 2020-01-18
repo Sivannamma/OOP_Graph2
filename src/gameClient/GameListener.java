@@ -18,6 +18,7 @@ public interface GameListener {
 	public HashMap<Integer, Robot> getRobot();
 
 	public void setRobot(List<String> robots) throws JSONException;
+	public void setRobotSrc();
 
 	public GameServer setGameServer(game_service game, GameServer games) throws JSONException;
 }

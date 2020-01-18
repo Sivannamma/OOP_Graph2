@@ -11,18 +11,22 @@ import Server.game_service;
 import algorithms.Graph_Algo;
 import dataStructure.DGraph;
 import dataStructure.Robot;
+import dataStructure.graph;
 import dataStructure.node_data;
 
 public class GameClient {
+	private ArrayList<node_data> list;
 	private GameServer games;
-	GameListener listener;
-	game_service game;
-	Graph_Algo graph;
+	private GameListener listener;
+	private game_service game;
+	private Graph_Algo graph;
 	private HashMap<Integer, Robot> robot;
+	private node_data temp;
 
 	public GameClient(int level) throws JSONException {
 		game = Game_Server.getServer(level); // setting the level that the user choose
-		game.addRobot(4);
+		list = new ArrayList<node_data>();
+		
 	}
 
 	public void addListener(GameListener listener) {
@@ -30,39 +34,62 @@ public class GameClient {
 	}
 
 	public void startGame() throws JSONException {
-		ArrayList<node_data> list = new ArrayList<node_data>();
+		
 		games = listener.setGameServer(game, games);
 		long start = System.currentTimeMillis(); // to massure how often we call the game.move function
-		game.startGame();
-		robot = listener.getRobot();
-		listener.updateGUI(game.getRobots(), game.getFruits());
+		addRobot(); // adding the robot to the game
+		listener.setRobotSrc();
+		listener.updateGUI(game.getRobots(), game.getFruits()); // paint the robots and the fruits
+		robot = listener.getRobot(); // first initiallize of the robots in the hash
+		game.startGame(); // start game
+		listener.updateGUI(game.getRobots(), game.getFruits()); // paint the robots and the fruits
 		while (game.isRunning()) {
-			for (Integer i : robot.keySet()) {
-				list = listener.auto_mode(game, i);
-				for (node_data n : list) {
-					node_data temp = n;
-					int goTo = temp.getKey();
-					robot.get(i).setLocation(temp.getLocation());
-					robot.get(i).setSrc(temp.getKey());
-					int id = robot.get(i).getId();
-					game.chooseNextEdge(id, goTo);
-					listener.setRobot(game.getRobots());
-					robot = listener.getRobot();
-					game.move();
-					while (this.robot.get(i).getDest() != -1) {
-						game.move();
-						if (listener != null) {
-							if (System.currentTimeMillis() - start >= (1000 / 110)) {
-								listener.updateGUI(game.getRobots(), game.getFruits());
-								start = System.currentTimeMillis();
-							}
-//			}
-						}
-					}
+			for (Integer i : robot.keySet()) { // itearte through the robots in the current level
+				// robot = listener.getRobot();// update the hash map after we moved the robot
+				if (robot.get(i).getDest() != -1)
+					continue;
+				if (robot.get(i).getPath().isEmpty()) { // only if we finished the path
+
+					list = listener.auto_mode(game, i); // getting the path for the robot
+					this.robot.get(i).setPath(list);
+				}
+				if (list.isEmpty()) {
+					continue;
+				}
+				temp = list.get(0); // takes only the first node of the list
+				robot.get(i).getPath().remove(0); // delete the node in the list we came from
+				int goTo = temp.getKey(); // getting the key of the wanted node
+				robot.get(i).setDest(goTo);
+				robot.get(i).setLocation(temp.getLocation()); // update the location of the
+				// current robot
+				int id = robot.get(i).getId(); // takes the current robot id
+				game.chooseNextEdge(id, goTo); // tell the robot to go to the wanted node
+				// listener.updateGUI(game.getRobots(), game.getFruits());
+
+				robot = listener.getRobot();// update the hash map after we moved the robot
+			}
+			game.move();
+			if (listener != null) {
+				if (System.currentTimeMillis() - start >= (1000 / 8)) {
+					// listener.updateGUI(game.getRobots(), game.getFruits());
+					listener.setRobot(game.getRobots()); // update the location after it moved
+					robot = listener.getRobot();// update the hash map after we moved the robot
+					listener.updateGUI(game.getRobots(), game.getFruits());
+					start = System.currentTimeMillis();
 				}
 			}
 		}
-		System.out.println("game ended : ");
+		games = listener.setGameServer(game, games);
+		System.out.println("game ended : " + games.getGrade());
+	}
+
+	private void addRobot() {
+		int count = games.getRobots();
+		while (count > 0) {
+			game.addRobot(count);
+			count--;
+		}
+
 	}
 
 	public game_service getGame() {

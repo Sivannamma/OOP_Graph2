@@ -18,6 +18,15 @@ public class Fruit {
 		this.isVisited = isVisited;
 	}
 
+	public String getPos() {
+		return pos;
+	}
+
+	public void setPos(String pos) {
+		this.pos = pos;
+		getLocation();
+	}
+
 	public edge_data getEdge() {
 		return edge;
 	}
@@ -63,12 +72,12 @@ public class Fruit {
 	}
 
 	public Point3D getLocation() {
-		if (this.point == null) {
-			String[] location = this.pos.split(",");
-			Point3D p = new Point3D(Double.parseDouble(location[0]), Double.parseDouble(location[1]),
-					Double.parseDouble(location[2]));
-			setLocation(p);
-		}
+
+		String[] location = this.pos.split(",");
+		Point3D p = new Point3D(Double.parseDouble(location[0]), Double.parseDouble(location[1]),
+				Double.parseDouble(location[2]));
+		setLocation(p);
+
 		return this.point;
 	}
 

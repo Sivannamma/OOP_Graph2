@@ -46,6 +46,7 @@ public class GUI_window extends JFrame implements ActionListener, MouseListener 
 
 	public GUI_window(Graph_Algo graph) {
 		this.graph = graph;
+
 		init_window();
 	}
 
@@ -55,6 +56,7 @@ public class GUI_window extends JFrame implements ActionListener, MouseListener 
 	}
 
 	private void init_window() {
+
 		// text
 		weight = new JTextField();
 		label = new JLabel();
@@ -190,7 +192,6 @@ public class GUI_window extends JFrame implements ActionListener, MouseListener 
 				}
 			}
 		}
-
 	}
 
 	@Override

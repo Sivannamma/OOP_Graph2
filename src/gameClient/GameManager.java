@@ -9,7 +9,7 @@ import dataStructure.graph;
 public class GameManager {
 	public static void main(String[] args) throws JSONException {
 
-		GameClient gameClient = new GameClient(5);
+		GameClient gameClient = new GameClient(23);
 		String gg = gameClient.getGraph();
 		graph temp = new DGraph(gg);
 		MyGameGUI gui = new MyGameGUI(temp);
