@@ -1,5 +1,6 @@
 package gameClient;
 
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,4 +28,6 @@ public interface GameListener {
 	public GameServer setGameServer(game_service game, GameServer games) throws JSONException;
 
 	public void upDateFruit(List<String> f) throws JSONException;
+	public void manualDrawRobot(game_service game);
+	public void mouseClicked(MouseEvent e);
 }

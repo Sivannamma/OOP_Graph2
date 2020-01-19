@@ -13,6 +13,7 @@ import dataStructure.DGraph;
 import dataStructure.Robot;
 import dataStructure.graph;
 import dataStructure.node_data;
+import utils.Point3D;
 
 public class GameClient {
 	private ArrayList<node_data> list;

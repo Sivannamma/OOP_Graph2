@@ -10,7 +10,7 @@ public class GameManager implements Runnable {
 	int level;
 	GameClient gameClient;
 
-	public GameManager(int level) {
+	public GameManager(int level) throws JSONException {
 		this.level = level;
 
 	}

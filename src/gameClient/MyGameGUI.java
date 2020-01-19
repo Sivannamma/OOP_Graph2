@@ -42,7 +42,7 @@ import utils.Point3D;
 
 public class MyGameGUI extends JFrame implements ActionListener, MouseListener, GameListener {
 	private static final double EPS = 0.001 * 0.001;
-	private static final double RADIUS = 1;
+	private static final double RADIUS = 40;
 	private static final long serialVersionUID = 1L;
 	boolean flag = false;
 	GameClient gameClient;
@@ -50,11 +50,14 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 	private double y_max;
 	private double x_min;
 	private double x_max;
+	boolean flagSrcDest = true;
 	Graph_Algo graph;
 	JTextField text;
 	JButton button;
+	int count = 1;
 	Label label;
 	boolean flagFruit = true;
+	private long start;
 	Dimension size;
 	private HashMap<Integer, Fruit> fruitss;
 	private int gameMode; // - one for manual, two for automatic
@@ -64,6 +67,8 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 	private game_service game;
 	boolean paintOnce;
 	boolean flagRobot = true;
+	private Robot src_R;
+	private node_data dest_m;
 
 	public MyGameGUI() {
 		this.graph = null;
@@ -116,7 +121,7 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 		// adding to the tag graphs
 		MenuItem a_game = new MenuItem("Automatic Game");
 		a_game.addActionListener(this);
-		MenuItem m_game = new MenuItem("Menual Game");
+		MenuItem m_game = new MenuItem("Manual Game");
 		m_game.addActionListener(this);
 
 		game.add(m_game);
@@ -293,28 +298,130 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
-
 		double xR = e.getX();
 		double yR = e.getY();
-		System.out.println(this.graph.getGraph().getV().size());
-		for (node_data n : this.graph.getGraph().getV()) {
-			Point3D src = n.getLocation();
-			// if (checkRadius(src, xR, yR))
-			System.out.println(game.getGraph());
-			game.addRobot(n.getKey());
-			try {
-				setRobot(game.getRobots());
-			} catch (JSONException e1) {
-				e1.printStackTrace();
+
+		if (setRobots) {
+			for (node_data n : this.graph.getGraph().getV()) {
+				Point3D src = n.getLocation();
+				if (checkRadius(src, xR, yR)) {
+					game.addRobot(n.getKey());
+					try {
+						setManualRobot(game.getRobots());
+					} catch (JSONException e1) {
+						e1.printStackTrace();
+					}
+					repaint();
+					break;
+				}
 			}
 		}
-		repaint();
+		if (flagSrcDest) {
+			label.setText("Click a robot");
+
+		}
+		if (!setRobots) {
+			for (node_data n : this.graph.getGraph().getV()) {
+				Point3D src = n.getLocation();
+				if (src_R == null) {
+					if (checkRadius(src, xR, yR)) {
+						for (Integer r : this.robot.keySet())
+							if (robot.get(r).getSrc() == n.getKey()) {
+								src_R = this.robot.get(r);
+								flagSrcDest = false;
+								label.setText("Click destination");
+								break;
+							}
+					}
+				}
+
+				else {
+					if (checkRadius(src, xR, yR)) {
+						dest_m = n;
+						break;
+					}
+
+				}
+			}
+			if (dest_m != null && src_R != null) {
+				flagSrcDest = true;
+				try {
+					setMaualPath(src_R, dest_m);
+				} catch (JSONException e1) {
+					e1.printStackTrace();
+				}
+				repaint();
+				src_R = null;
+				dest_m = null;
+
+			}
+		}
+		if (count == 1) {
+			if (robot.size() == games.getRobots()) {
+				start = System.currentTimeMillis(); // to massure how often we call the game.move function
+				setRobots = false;
+				button.setText("Start");
+				button.setVisible(true);
+				count--;
+			}
+		}
+
+	}
+
+	private void setMaualPath(Robot src_R2, node_data dest_m2) throws JSONException {
+		start = System.currentTimeMillis();
+		ArrayList<node_data> list = (ArrayList<node_data>) this.graph.shortestPath(src_R2.getSrc(), dest_m2.getKey());
+		this.graph.reverse(list); // reversing because we get it diffrently from the algorithm
+		if (!list.isEmpty())
+			list.remove(0); // deleting the first one because the robot is on it already
+		while (!list.isEmpty()) {
+
+			if (!list.isEmpty()) {
+				game.chooseNextEdge(src_R2.getId(), list.get(0).getKey());
+				updateGUI(game.getRobots(), game.getFruits());
+				game.move();
+				updateGUI(game.getRobots(), game.getFruits());
+				list.remove(0);
+			}
+			while (this.robot.get(src_R2.getId()).getDest() != -1) { // as long the robot didnt reach the next node
+				game.move();
+				if (System.currentTimeMillis() - start >= (1000 / 8)) {
+					updateGUI(game.getRobots(), game.getFruits());
+					repaint();
+					start = System.currentTimeMillis();
+				}
+			}
+
+		}
+		label.setText("Click a robot");
+
+	}
+
+	private void setManualRobot(List<String> robots) throws JSONException {
+		for (String robo : robots) {
+			// creating json object
+			JSONObject json = new JSONObject(robo);
+			// getting from the json object the Robot object itself
+			JSONObject roby = json.getJSONObject("Robot");
+			int id = roby.getInt("id");
+			double value = roby.getDouble("value");
+			double speed = roby.getDouble("speed");
+			int src = roby.getInt("src");
+			int dest = roby.getInt("dest");
+			String pos = roby.getString("pos");
+			robot.put(id, new Robot(id, value, speed, src, dest, pos));
+		}
+		flagRobot = false;
+
 	}
 
 	private boolean checkRadius(Point3D src, double xR, double yR) {
-		double x = Math.pow(src.ix() - xR, 2);
-		double y = Math.pow(src.iy() - yR, 2);
-		if (Math.sqrt(x + y) <= RADIUS)
+		double a = scaleX(src.ix());
+		double b = scaleY(src.iy());
+		double x = Math.pow(a - xR, 2);
+		double y = Math.pow(b - yR, 2);
+		double ans = Math.sqrt(x + y);
+		if (ans <= RADIUS)
 			return true;
 		return false;
 
@@ -344,7 +451,7 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 
 		String str = e.getActionCommand();
 		switch (str) {
-		case "Menual Game": {
+		case "Manual Game": {
 			gameMode = 1; // setting game mode
 			setUp();
 			break;
@@ -372,17 +479,35 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 					{
 						setRobots = true; // we activate the mouse lisiten
 						game = Game_Server.getServer(level);
+						games = setGameServer(game, games);
 						this.graph = new Graph_Algo(new DGraph(game.getGraph()));
 						setScale();
-						Game_Manual m = new Game_Manual(level);
-						Thread t1 = new Thread(m);
-						t1.start();
+						setFruit(game.getFruits());
+						repaint();
+						JOptionPane.showMessageDialog(null, "Please enter " + games.getRobots() + " robots", "Robots",
+								JOptionPane.DEFAULT_OPTION);
+
 					}
 					repaint();
 				}
 			} catch (Exception e1) {
 				JOptionPane.showMessageDialog(null, "Something went wrong", "Error", JOptionPane.DEFAULT_OPTION);
 			}
+			break;
+		}
+		case "Start": {
+			JOptionPane.showMessageDialog(null,
+					"You can start moving the robots. \n Click a robot, and then click the destination", "Play",
+					JOptionPane.DEFAULT_OPTION);
+			game.startGame();
+			button.setVisible(false);
+			label.setVisible(true);
+//			while (game.isRunning()) {
+//				if (!game.isRunning())
+//					JOptionPane.showMessageDialog(null, "GAME OVER \n Your score is : " + games.getGrade(), "Game Over",
+//							JOptionPane.DEFAULT_OPTION);
+//			}
+
 			break;
 		}
 		}
@@ -618,6 +743,10 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 		setFruit(f);
 		repaint();
 
+	}
+
+	public void manualDrawRobot(game_service game) {
+		this.game = game;
 	}
 
 }
