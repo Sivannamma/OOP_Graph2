@@ -10,6 +10,7 @@ import java.awt.Label;
 import java.awt.Menu;
 import java.awt.MenuBar;
 import java.awt.MenuItem;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -41,6 +42,7 @@ import utils.Point3D;
 
 public class MyGameGUI extends JFrame implements ActionListener, MouseListener, GameListener {
 	private static final double EPS = 0.001 * 0.001;
+	private static final double RADIUS = 1;
 	private static final long serialVersionUID = 1L;
 	boolean flag = false;
 	GameClient gameClient;
@@ -71,6 +73,7 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 	public MyGameGUI(Graph_Algo graph) {
 		this.graph = graph;
 		init_window();
+
 	}
 
 	public MyGameGUI(graph g) {
@@ -289,7 +292,31 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 	}
 
 	@Override
-	public void mouseClicked(MouseEvent arg0) {
+	public void mouseClicked(MouseEvent e) {
+
+		double xR = e.getX();
+		double yR = e.getY();
+		System.out.println(this.graph.getGraph().getV().size());
+		for (node_data n : this.graph.getGraph().getV()) {
+			Point3D src = n.getLocation();
+			// if (checkRadius(src, xR, yR))
+			System.out.println(game.getGraph());
+			game.addRobot(n.getKey());
+			try {
+				setRobot(game.getRobots());
+			} catch (JSONException e1) {
+				e1.printStackTrace();
+			}
+		}
+		repaint();
+	}
+
+	private boolean checkRadius(Point3D src, double xR, double yR) {
+		double x = Math.pow(src.ix() - xR, 2);
+		double y = Math.pow(src.iy() - yR, 2);
+		if (Math.sqrt(x + y) <= RADIUS)
+			return true;
+		return false;
 
 	}
 
@@ -338,35 +365,24 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 					setFalse();
 					if (gameMode == 2) // automatic mode (we place the robots)
 					{
-						this.button.setVisible(true);
-						this.button.setText("Start");
-						gameClient = new GameClient(level);
-						String gg = gameClient.getGraph();
-						graph temp = new DGraph(gg);
-						// init this graph to the toString of getGraph we got from the server
-						this.graph = new Graph_Algo(temp);
-						setScale(); // set the scale of the new graph appearing on the window
-						gameClient.addListener(this);
+						GameManager m = new GameManager(level);
+						Thread t1 = new Thread(m);
+						t1.start();
 					} else // means manual game mode
 					{
 						setRobots = true; // we activate the mouse lisiten
+						game = Game_Server.getServer(level);
+						this.graph = new Graph_Algo(new DGraph(game.getGraph()));
+						setScale();
+						Game_Manual m = new Game_Manual(level);
+						Thread t1 = new Thread(m);
+						t1.start();
 					}
 					repaint();
 				}
 			} catch (Exception e1) {
 				JOptionPane.showMessageDialog(null, "Something went wrong", "Error", JOptionPane.DEFAULT_OPTION);
 			}
-			break;
-		}
-		case "Start": {
-			setFalse();
-			try {
-				gameClient.startGame();
-			} catch (JSONException e1) {
-				e1.printStackTrace();
-			}
-			// JOptionPane.showMessageDialog(null, "GAME OVER : " + games.getGrade(),
-			// "Game", JOptionPane.DEFAULT_OPTION);
 			break;
 		}
 		}
@@ -461,8 +477,10 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 			// getting the data needed for a fruit variable
 			String pos = fruity.getString("pos");
 			if (!fruitss.isEmpty() && flag) {
-				if (fruitss.get(i).getPos().equals(pos))
+				if (fruitss.get(i).getPos().equals(pos)) {
 					continue;
+
+				}
 			}
 			double value = fruity.getDouble("value");
 			int type = fruity.getInt("type");
@@ -470,11 +488,13 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 			if (flagFruit)
 				fruitss.put(i++, new Fruit(value, type, pos));
 			else {
-				fruitss.get(i++).setPos(pos);
-				fruitss.get(i++).setValue(value);
-				fruitss.get(i++).setType(type);
-			}
 
+				fruitss.get(i).setPos(pos);
+				fruitss.get(i).setValue(value);
+				fruitss.get(i).setType(type);
+				fruitss.get(i).setVisited(false);
+				i++;
+			}
 		}
 		flag = true;
 		connect_fruitsAndEdge(); // calling the function to connect the fruits to the right place
@@ -581,6 +601,10 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 
 	}
 
+	public void setGraphFromClient(Graph_Algo g) {
+		this.graph = g;
+	}
+
 	public HashMap<Integer, Robot> getRobot() {
 		return robot;
 	}
@@ -588,4 +612,12 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 	public void setRobot(HashMap<Integer, Robot> robot) {
 		this.robot = robot;
 	}
+
+	@Override
+	public void upDateFruit(List<String> f) throws JSONException {
+		setFruit(f);
+		repaint();
+
+	}
+
 }

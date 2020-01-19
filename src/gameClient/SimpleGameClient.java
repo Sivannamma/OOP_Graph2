@@ -36,11 +36,11 @@ import oop_dataStructure.oop_graph;
 public class SimpleGameClient {
 	public static void main(String[] a) {
 		int scenario_num = 1;
-		//Gson gso = new Gson();
-		//game_service game = Game_Server.getServer(scenario_num); // you have [0,23]
+		// Gson gso = new Gson();
+		// game_service game = Game_Server.getServer(scenario_num); // you have [0,23]
 
-		//String gg = game.getGraph();
-		//graph temp = new DGraph(gg);
+		// String gg = game.getGraph();
+		// graph temp = new DGraph(gg);
 		MyGameGUI wind = new MyGameGUI();
 		wind.setVisible(true);
 //		test1();

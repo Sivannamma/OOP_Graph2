@@ -22,11 +22,13 @@ public class GameClient {
 	private Graph_Algo graph;
 	private HashMap<Integer, Robot> robot;
 	private node_data temp;
+	// private graph g;
 
 	public GameClient(int level) throws JSONException {
 		game = Game_Server.getServer(level); // setting the level that the user choose
+		this.graph = new Graph_Algo(new DGraph(game.getGraph()));
 		list = new ArrayList<node_data>();
-		
+		// this.g= temp;
 	}
 
 	public void addListener(GameListener listener) {
@@ -34,11 +36,11 @@ public class GameClient {
 	}
 
 	public void startGame() throws JSONException {
-		
 		games = listener.setGameServer(game, games);
 		long start = System.currentTimeMillis(); // to massure how often we call the game.move function
 		addRobot(); // adding the robot to the game
 		listener.setRobotSrc();
+		listener.setGraphFromClient(graph);
 		listener.updateGUI(game.getRobots(), game.getFruits()); // paint the robots and the fruits
 		robot = listener.getRobot(); // first initiallize of the robots in the hash
 		game.startGame(); // start game
