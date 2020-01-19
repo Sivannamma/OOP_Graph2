@@ -1,5 +1,7 @@
 package dataStructure;
 
+import org.json.JSONObject;
+
 import utils.Point3D;
 
 public class Fruit {
@@ -9,6 +11,15 @@ public class Fruit {
 	private String pos;
 	private edge_data edge;
 	private boolean isVisited;
+
+	public Fruit() {
+		this.value = 0;
+		this.type = 0;
+		this.point = null;
+		this.pos = "";
+		this.edge = null;
+		this.isVisited = false;
+	}
 
 	public boolean isVisited() {
 		return isVisited;
@@ -88,4 +99,5 @@ public class Fruit {
 
 		this.point = new Point3D(x, y, z);
 	}
+
 }

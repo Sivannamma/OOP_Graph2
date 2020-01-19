@@ -57,6 +57,7 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 	int count = 1;
 	boolean isManual = false;
 	Label label;
+	KML_Logger myKML;
 
 	boolean flagFruit = true;
 	private long start;
@@ -89,6 +90,7 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 	}
 
 	private void init_window() {
+
 		setScale();
 		paintOnce = true;
 		setRobots = false;
@@ -476,9 +478,10 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 					setFalse();
 					if (gameMode == 2) // automatic mode (we place the robots)
 					{
-						GameManager m = new GameManager(level);
+						GameManager m = new GameManager(level, this.myKML);
 						Thread t1 = new Thread(m);
 						t1.start();
+
 					} else // means manual game mode
 					{
 						isManual = true;
@@ -592,6 +595,8 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 				robot.get(id).setSrc(src);
 				robot.get(id).setPos(pos);
 				robot.get(id).setValue(value);
+
+				myKML.PlaceMark("robot", robot.get(id).getLocation());
 			}
 		}
 		flagRobot = false;
@@ -622,8 +627,15 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 				fruitss.get(i).setValue(value);
 				fruitss.get(i).setType(type);
 				fruitss.get(i).setVisited(false);
+
+				if (fruitss.get(i).getType() == 1) {
+					myKML.PlaceMark("apple", fruitss.get(i).getLocation());
+				} else
+					myKML.PlaceMark("banana", fruitss.get(i).getLocation());
+
 				i++;
 			}
+
 		}
 		flag = true;
 		connect_fruitsAndEdge(); // calling the function to connect the fruits to the right place
@@ -753,6 +765,10 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 
 	public void manualDrawRobot(game_service game) {
 		this.game = game;
+	}
+
+	public void setKML(KML_Logger myKML) {
+		this.myKML = myKML;
 	}
 
 }

@@ -16,6 +16,7 @@ import dataStructure.node_data;
 import utils.Point3D;
 
 public class GameClient {
+	KML_Logger myKML;
 	private ArrayList<node_data> list;
 	private GameServer games;
 	private GameListener listener;
@@ -23,13 +24,15 @@ public class GameClient {
 	private Graph_Algo graph;
 	private HashMap<Integer, Robot> robot;
 	private node_data temp;
+	int level;
 	// private graph g;
 
-	public GameClient(int level) throws JSONException {
+	public GameClient(int level, KML_Logger myKML) throws JSONException {
 		game = Game_Server.getServer(level); // setting the level that the user choose
 		this.graph = new Graph_Algo(new DGraph(game.getGraph()));
 		list = new ArrayList<node_data>();
-		// this.g= temp;
+		this.myKML = myKML;
+		this.level = level;
 	}
 
 	public void addListener(GameListener listener) {
@@ -37,15 +40,19 @@ public class GameClient {
 	}
 
 	public void startGame() throws JSONException {
+		myKML = new KML_Logger(level);
+		listener.setKML(this.myKML);
 		games = listener.setGameServer(game, games);
 		long start = System.currentTimeMillis(); // to massure how often we call the game.move function
 		addRobot(); // adding the robot to the game
 		listener.setRobotSrc();
 		listener.setGraphFromClient(graph);
 		listener.updateGUI(game.getRobots(), game.getFruits()); // paint the robots and the fruits
+		listener.setKML(this.myKML);
 		robot = listener.getRobot(); // first initiallize of the robots in the hash
 		game.startGame(); // start game
 		listener.updateGUI(game.getRobots(), game.getFruits()); // paint the robots and the fruits
+		listener.setKML(this.myKML);
 		while (game.isRunning()) {
 			for (Integer i : robot.keySet()) { // itearte through the robots in the current level
 				// robot = listener.getRobot();// update the hash map after we moved the robot
@@ -78,10 +85,12 @@ public class GameClient {
 					listener.setRobot(game.getRobots()); // update the location after it moved
 					robot = listener.getRobot();// update the hash map after we moved the robot
 					listener.updateGUI(game.getRobots(), game.getFruits());
+					listener.setKML(this.myKML);
 					start = System.currentTimeMillis();
 				}
 			}
 		}
+		this.myKML.EndAndSave_KML();
 		games = listener.setGameServer(game, games);
 		System.out.println("game ended : " + games.getGrade());
 	}

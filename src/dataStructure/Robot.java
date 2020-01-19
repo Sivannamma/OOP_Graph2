@@ -2,6 +2,8 @@ package dataStructure;
 
 import java.util.ArrayList;
 
+import org.json.JSONObject;
+
 import utils.Point3D;
 
 public class Robot {
@@ -12,6 +14,17 @@ public class Robot {
 	private String pos;
 	private Point3D point;
 	private ArrayList<node_data> path;
+
+	public Robot() {
+		this.id = -1;
+		this.value = 0;
+		this.speed = 0;
+		this.src = 0;
+		this.dest = 0;
+		this.pos = "";
+		this.point = null;
+		this.path = null;
+	}
 
 	public Robot(int id, double value, double speed, int src, int dest, String pos) { // constructor
 		this.src = src;

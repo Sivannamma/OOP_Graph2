@@ -30,4 +30,5 @@ public interface GameListener {
 	public void upDateFruit(List<String> f) throws JSONException;
 	public void manualDrawRobot(game_service game);
 	public void mouseClicked(MouseEvent e);
+	public void setKML(KML_Logger myKML) ;
 }
