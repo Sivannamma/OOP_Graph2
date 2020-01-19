@@ -35,15 +35,7 @@ import oop_dataStructure.oop_graph;
  */
 public class SimpleGameClient {
 	public static void main(String[] a) {
-//		int scenario_num = 14;
-//		Gson gso = new Gson();
-//		game_service game = Game_Server.getServer(scenario_num); // you have [0,23]
-//
-//		String gg = game.getGraph();
-//		graph temp = new DGraph(gg);
-//		game.addRobot(34);
 
-//		System.out.println(game.getRobots());
 		MyGameGUI wind = new MyGameGUI();
 		wind.setVisible(true);
 //		test1();

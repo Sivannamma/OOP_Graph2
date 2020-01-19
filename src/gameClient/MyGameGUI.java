@@ -55,7 +55,9 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 	JTextField text;
 	JButton button;
 	int count = 1;
+	boolean isManual = false;
 	Label label;
+
 	boolean flagFruit = true;
 	private long start;
 	Dimension size;
@@ -298,6 +300,8 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
+		if (!isManual)
+			return;
 		double xR = e.getX();
 		double yR = e.getY();
 
@@ -477,6 +481,7 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 						t1.start();
 					} else // means manual game mode
 					{
+						isManual = true;
 						setRobots = true; // we activate the mouse lisiten
 						game = Game_Server.getServer(level);
 						games = setGameServer(game, games);
@@ -604,7 +609,6 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 			if (!fruitss.isEmpty() && flag) {
 				if (fruitss.get(i).getPos().equals(pos)) {
 					continue;
-
 				}
 			}
 			double value = fruity.getDouble("value");
@@ -704,8 +708,10 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 		setFruit(game.getFruits());
 		ArrayList<node_data> list = new ArrayList<node_data>();
 		for (Integer fru : this.fruitss.keySet()) {
-			if (this.fruitss.get(fru).isVisited())
-				continue;
+			if (this.fruitss.size() != 1) {
+				if (this.fruitss.get(fru).isVisited())
+					continue;
+			}
 			this.fruitss.get(fru).setVisited(true);
 			if (this.fruitss.get(fru).getType() == -1) { // banana
 				list = (ArrayList<node_data>) this.graph.shortestPath(this.robot.get(i).getSrc(),
