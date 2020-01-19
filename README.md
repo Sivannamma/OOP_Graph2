@@ -1,18 +1,18 @@
 Project writes: Sivan namah azari, Elad vainbrand
 project name : Robot collector Graph
 
-# Project description: this project is a follow up of the first project called graph. 
+### Project description: this project is a follow up of the first project called graph. 
 
-# The project is about robots that can move through the graph, collecting two types of fruit (banana, apple) which each of them has a value, the point is to collect more fruits.
-# In the game we have 24 levels, that are numbered from 0-23 include.
+### The project is about robots that can move through the graph, collecting two types of fruit (banana, apple) which each of them has a value, the point is to collect more fruits.
+### In the game we have 24 levels, that are numbered from 0-23 include.
 
 ### This project is mainly about two methods we can use thorugh graphical interface, using jframe window.
 1. The first one- automatical game : in this option the robots start in the best position for them to collect all the fruits. And they move trought the graph using shortPath algorithm in order to move arounf through the nodes.
 2. The second - manual game : in this option the user decides where to position the robots , and the nodes which he wants to move the robots to.
 
-# For this project we use Jframe window, that implements several things which allows us to operate the game behind the scene.
+### For this project we use Jframe window, that implements several things which allows us to operate the game behind the scene.
 
-#We added few more classes in addition to the previous project "Graph".
+### We added few more classes in addition to the previous project "Graph".
 1.Fruit class - which represents all the data we need in order to place the fruits on the window, and to let each robot collect a certain fruit.
 2.Robot class- which represent ech robot in the level.
 3.GameServer- which represents the level itself and the data we can collect from it (total grade, the map, the number of fruits, the number of robots, etc'..)
@@ -66,8 +66,8 @@ Exceptions in the project:
 
 For a diffrent input, the system will throw an exception.
 
-#Operation- run the gui window through the main, chose one of a level, Automatical game, Manual game, then the user need to pick a level, afterwards the level will be present on the gui window.
-#If u chose the automatical game, you just need press the run button, and the game will initialize itself, placing robots, and moving them torwads the fruits.
-#If you chose the manual game, u'll need to place the amount of robots that the pop up window will tell. afterwards u'll need to press the start button, and follow the intruction, click a robot and then click a destination, in order to move them through the graph. this proccess might take a while, u need to make sure the robot in the place after clicking another robot.
+### Operation- run the gui window through the main, chose one of a level, Automatical game, Manual game, then the user need to pick a level, afterwards the level will be present on the gui window.
+### If u chose the automatical game, you just need press the run button, and the game will initialize itself, placing robots, and moving them torwads the fruits.
+### If you chose the manual game, u'll need to place the amount of robots that the pop up window will tell. afterwards u'll need to press the start button, and follow the intruction, click a robot and then click a destination, in order to move them through the graph. this proccess might take a while, u need to make sure the robot in the place after clicking another robot.
 
 Technologies- for this project we used eclipse editor, using java language.
