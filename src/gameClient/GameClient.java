@@ -78,9 +78,10 @@ public class GameClient {
 
 				robot = listener.getRobot();// update the hash map after we moved the robot
 			}
-			game.move();
+			// game.move();
 			if (listener != null) {
-				if (System.currentTimeMillis() - start >= (1000 / 8)) {
+				if (System.currentTimeMillis() - start >= (1000 / 10)) {
+					game.move();
 					// listener.updateGUI(game.getRobots(), game.getFruits());
 					listener.setRobot(game.getRobots()); // update the location after it moved
 					robot = listener.getRobot();// update the hash map after we moved the robot
@@ -93,6 +94,7 @@ public class GameClient {
 		this.myKML.EndAndSave_KML();
 		games = listener.setGameServer(game, games);
 		System.out.println("game ended : " + games.getGrade());
+		System.out.println("moves" + games.getMoves());
 	}
 
 	private void addRobot() {

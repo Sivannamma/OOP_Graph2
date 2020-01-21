@@ -4,8 +4,10 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="lib" path="C:/Users/סיון נעמה עזרי/Desktop/שנה 2/מונחה עצמים/gson-2.0.jar/gson-2.0.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/5"/>
-	<classpathentry kind="lib" path="C:/Users/סיון נעמה עזרי/Desktop/שנה 2/מונחה עצמים/Ex3_v2/Ex3_v2/lib/GameServer_v0.27.jar"/>
 	<classpathentry kind="lib" path="C:/Users/סיון נעמה עזרי/Desktop/שנה 2/מונחה עצמים/Ex3_v2/Ex3_v2/lib/java-json.jar"/>
 	<classpathentry kind="lib" path="C:/Users/סיון נעמה עזרי/Desktop/שנה 2/מונחה עצמים/תרגולים יעל/JASON הקוד מהתרגול-20200112/gson-2.8.6.jar"/>
+	<classpathentry kind="lib" path="C:/Users/סיון נעמה עזרי/Desktop/מטלה4/Ex4_v0.32/Ex4_v0.31/lib/GameServer_v0.32.jar"/>
+	<classpathentry kind="lib" path="C:/Users/סיון נעמה עזרי/Desktop/מטלה4/Ex4_v0.32/Ex4_v0.31/lib/java-json.jar"/>
+	<classpathentry kind="lib" path="C:/Users/סיון נעמה עזרי/Desktop/מטלה4/Ex4_v0.32/Ex4_v0.31/lib/mysql-connector-java-5.1.47.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

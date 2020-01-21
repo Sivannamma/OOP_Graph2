@@ -726,17 +726,39 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 			}
 			this.fruitss.get(fru).setVisited(true);
 			if (this.fruitss.get(fru).getType() == -1) { // banana
-				list = (ArrayList<node_data>) this.graph.shortestPath(this.robot.get(i).getSrc(),
-						this.fruitss.get(fru).getEdge().getSrc());
-				list.remove(list.size() - 1);
-			} else {
-				list = (ArrayList<node_data>) this.graph.shortestPath(this.robot.get(i).getSrc(),
-						this.fruitss.get(fru).getEdge().getSrc());
-				list.add(this.graph.getGraph().getNode(this.fruitss.get(fru).getEdge().getDest()));
+				edge_data e = this.fruitss.get(fru).getEdge();
+				if (e.getSrc() < e.getDest()) {
+					list = (ArrayList<node_data>) this.graph.shortestPath(this.robot.get(i).getSrc(),
+							this.fruitss.get(fru).getEdge().getDest());
+					list.remove(list.size() - 1);
+					this.graph.reverse(list);
+					list.add(this.graph.getGraph().getNode(e.getSrc()));
+				} else { // dest<src
+					list = (ArrayList<node_data>) this.graph.shortestPath(this.robot.get(i).getSrc(),
+							this.fruitss.get(fru).getEdge().getSrc());
+					list.remove(list.size() - 1);
+					this.graph.reverse(list);
+					list.add(this.graph.getGraph().getNode(e.getDest()));
+				}
+
+			} else { // apple
+
+				edge_data e = this.fruitss.get(fru).getEdge();
+				if (e.getSrc() > e.getDest()) {
+					list = (ArrayList<node_data>) this.graph.shortestPath(this.robot.get(i).getSrc(),
+							this.fruitss.get(fru).getEdge().getDest());
+					list.remove(list.size() - 1);
+					this.graph.reverse(list);
+					list.add(this.graph.getGraph().getNode(e.getSrc()));
+				} else { // dest>src
+					list = (ArrayList<node_data>) this.graph.shortestPath(this.robot.get(i).getSrc(),
+							this.fruitss.get(fru).getEdge().getSrc());
+					list.remove(list.size() - 1);
+					this.graph.reverse(list);
+					list.add(this.graph.getGraph().getNode(e.getDest()));
+				}
+
 			}
-			// adding the last node to the list which is the node of the dest of the fruit
-			this.graph.reverse(list);
-			list.add(this.graph.getGraph().getNode(this.fruitss.get(fru).getEdge().getDest()));
 			return list;
 
 		}
