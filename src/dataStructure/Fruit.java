@@ -11,6 +11,7 @@ public class Fruit {
 	private String pos;
 	private edge_data edge;
 	private boolean isVisited;
+	private boolean toDraw;
 
 	public Fruit() {
 		this.value = 0;
@@ -18,7 +19,16 @@ public class Fruit {
 		this.point = null;
 		this.pos = "";
 		this.edge = null;
+		this.toDraw = true;
 		this.isVisited = false;
+	}
+
+	public boolean isToDraw() {
+		return toDraw;
+	}
+
+	public void setToDraw(boolean toDraw) {
+		this.toDraw = toDraw;
 	}
 
 	public boolean isVisited() {
@@ -75,6 +85,8 @@ public class Fruit {
 		this.type = type;
 		this.pos = pos;
 		this.edge = null;
+		this.toDraw = true;
+		this.isVisited = false;
 		getLocation();
 	}
 

@@ -9,6 +9,7 @@ import org.json.JSONException;
 
 import Server.game_service;
 import algorithms.Graph_Algo;
+import dataStructure.Fruit;
 import dataStructure.Robot;
 import dataStructure.node_data;
 
@@ -23,12 +24,20 @@ public interface GameListener {
 
 	public void setRobot(List<String> robots) throws JSONException;
 
-	public void setRobotSrc();
-
 	public GameServer setGameServer(game_service game, GameServer games) throws JSONException;
 
-	public void upDateFruit(List<String> f) throws JSONException;
 	public void manualDrawRobot(game_service game);
+
 	public void mouseClicked(MouseEvent e);
-	public void setKML(KML_Logger myKML) ;
+
+	public void setKML(KML_Logger myKML);
+
+	public HashMap<String, Fruit> getFruitss();
+
+	public void setFruit(List<String> fruits) throws JSONException;
+
+	public void setFalseFruit(String string);
+
+	public void setFruitss(HashMap<String, Fruit> fruitss);
+
 }

@@ -2,6 +2,7 @@ package gameClient;
 
 import java.awt.Color;
 import java.util.List;
+import java.util.Set;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -44,7 +45,7 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 	private static final double EPS = 0.001 * 0.001;
 	private static final double RADIUS = 40;
 	private static final long serialVersionUID = 1L;
-	boolean flag = false;
+	boolean flag = true;
 	GameClient gameClient;
 	private double y_min;
 	private double y_max;
@@ -62,7 +63,16 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 	boolean flagFruit = true;
 	private long start;
 	Dimension size;
-	private HashMap<Integer, Fruit> fruitss;
+
+	public HashMap<String, Fruit> getFruitss() {
+		return fruitss;
+	}
+
+	public void setFruitss(HashMap<String, Fruit> fruitss) {
+		this.fruitss = fruitss;
+	}
+
+	private HashMap<String, Fruit> fruitss;
 	private int gameMode; // - one for manual, two for automatic
 	private HashMap<Integer, Robot> robot; // hashmap to manage our robots in the movement
 	private boolean setRobots; // when true, we activate the mouse lisiten so the user place the robots
@@ -94,7 +104,7 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 		setScale();
 		paintOnce = true;
 		setRobots = false;
-		fruitss = new HashMap<Integer, Fruit>();
+		fruitss = new HashMap<String, Fruit>();
 		gameMode = 0; // default setting
 		robot = new HashMap<Integer, Robot>();
 		// the size of the window
@@ -226,7 +236,6 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 	public void paint(Graphics g1) {
 		super.paint(g1);
 		g1.setFont(new Font("David", 10, 14));
-		// if (paintOnce)
 		drawGraph(g1); // drawing the graph
 		drawFruits(g1); // drawing fruits
 		drawRobots(g1); // drawing robots
@@ -284,7 +293,10 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 	}
 
 	private void drawFruits(Graphics g1) {
-		for (Integer i : fruitss.keySet()) {
+
+		for (String i : fruitss.keySet()) {
+			if (!(this.fruitss.get(i).isToDraw()))
+				continue;
 			double x = scaleX(fruitss.get(i).getLocation().ix());
 			double y = scaleY(fruitss.get(i).getLocation().iy());
 			String img = "";
@@ -510,11 +522,6 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 			game.startGame();
 			button.setVisible(false);
 			label.setVisible(true);
-//			while (game.isRunning()) {
-//				if (!game.isRunning())
-//					JOptionPane.showMessageDialog(null, "GAME OVER \n Your score is : " + games.getGrade(), "Game Over",
-//							JOptionPane.DEFAULT_OPTION);
-//			}
 
 			break;
 		}
@@ -536,41 +543,6 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 		games = new GameServer(fruit, moves, grade, robots, graph);
 		return games;
 
-	}
-
-	private void setGame(game_service game) throws JSONException {
-
-		int count = games.getRobots();
-		for (Integer f : this.fruitss.keySet()) {
-			if (count == 0)
-				break;
-			count--;
-			game.addRobot(fruitss.get(f).getEdge().getSrc());
-		}
-		setRobot(game.getRobots());
-		setRobotSrc(); // setting the robots src's
-	}
-
-	public void setRobotSrc() {
-		int i = 0;
-		for (Integer r : this.robot.keySet()) {
-			if (i < this.fruitss.size()) {
-				if (this.fruitss.get(i).getType() == 1) { // if its an apple means from low to high so means src is
-					robot.get(r).setSrc(this.fruitss.get(i).getEdge().getSrc());
-					this.robot.get(r).setLocation(
-							this.graph.getGraph().getNode(this.fruitss.get(i++).getEdge().getSrc()).getLocation());
-				} else { // banana from hight to low, so means the dest is the place
-					robot.get(r).setSrc(this.fruitss.get(i).getEdge().getDest());
-					this.robot.get(r).setLocation(
-							this.graph.getGraph().getNode(this.fruitss.get(i++).getEdge().getDest()).getLocation());
-				}
-			} else {
-				int rand = (int) (Math.random() * this.graph.getGraph().getV().size());
-				robot.get(r).setSrc(rand);
-				this.robot.get(r).setLocation(
-						this.graph.getGraph().getNode(this.fruitss.get(rand).getEdge().getSrc()).getLocation());
-			}
-		}
 	}
 
 	public void setRobot(List<String> robots) throws JSONException {
@@ -602,8 +574,8 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 		flagRobot = false;
 	}
 
-	private void setFruit(List<String> fruits) throws JSONException {
-		int i = 0;
+	public void setFruit(List<String> fruits) throws JSONException {
+
 		for (String fru : fruits) {
 			// creating json object
 			JSONObject json = new JSONObject(fru);
@@ -611,34 +583,21 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 			JSONObject fruity = json.getJSONObject("Fruit");
 			// getting the data needed for a fruit variable
 			String pos = fruity.getString("pos");
-			if (!fruitss.isEmpty() && flag) {
-				if (fruitss.get(i).getPos().equals(pos)) {
-					continue;
-				}
-			}
 			double value = fruity.getDouble("value");
 			int type = fruity.getInt("type");
-			// adding to the hashmap of fruits
-			if (flagFruit)
-				fruitss.put(i++, new Fruit(value, type, pos));
-			else {
 
-				fruitss.get(i).setPos(pos);
-				fruitss.get(i).setValue(value);
-				fruitss.get(i).setType(type);
-				fruitss.get(i).setVisited(false);
+			if (!fruitss.containsKey(pos))
+				fruitss.put(pos, new Fruit(value, type, pos));
 
-				if (fruitss.get(i).getType() == 1) {
-					myKML.PlaceMark("apple", fruitss.get(i).getLocation());
-				} else
-					myKML.PlaceMark("banana", fruitss.get(i).getLocation());
-
-				i++;
-			}
+			if (fruitss.get(pos).getType() == 1) {
+				myKML.PlaceMark("apple", fruitss.get(pos).getLocation());
+			} else
+				myKML.PlaceMark("banana", fruitss.get(pos).getLocation());
 
 		}
-		flag = true;
+
 		connect_fruitsAndEdge(); // calling the function to connect the fruits to the right place
+
 	}
 
 	/**
@@ -651,7 +610,7 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 		boolean isFound = false;
 
 		// iterating over the fruits
-		for (Integer i : fruitss.keySet()) {
+		for (String i : fruitss.keySet()) {
 			isFound = false;
 			// iterating over the nodes in the graph
 			for (node_data node : this.graph.getGraph().getV()) {
@@ -717,51 +676,52 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 
 	@Override
 	public ArrayList<node_data> auto_mode(game_service game, int i) throws JSONException {
-		setFruit(game.getFruits());
 		ArrayList<node_data> list = new ArrayList<node_data>();
-		for (Integer fru : this.fruitss.keySet()) {
-			if (this.fruitss.size() != 1) {
-				if (this.fruitss.get(fru).isVisited())
-					continue;
+		setFruit(game.getFruits());
+//		for (String fru : this.fruitss.keySet()) {
+//			if (this.fruitss.size() != 1) {
+//				if (this.fruitss.get(fru).isVisited())
+//					continue;
+//			}
+		String fru = closesFruit(i);
+
+		this.robot.get(i).setFruitKey(fru);
+		this.fruitss.get(fru).setVisited(true);
+		if (this.fruitss.get(fru).getType() == -1) { // banana
+			edge_data e = this.fruitss.get(fru).getEdge();
+			if (e.getSrc() < e.getDest()) {
+				list = (ArrayList<node_data>) this.graph.shortestPath(this.robot.get(i).getSrc(),
+						this.fruitss.get(fru).getEdge().getDest());
+				list.remove(list.size() - 1);
+				this.graph.reverse(list);
+				list.add(this.graph.getGraph().getNode(e.getSrc()));
+			} else { // dest<src
+				list = (ArrayList<node_data>) this.graph.shortestPath(this.robot.get(i).getSrc(),
+						this.fruitss.get(fru).getEdge().getSrc());
+				list.remove(list.size() - 1);
+				this.graph.reverse(list);
+				list.add(this.graph.getGraph().getNode(e.getDest()));
 			}
-			this.fruitss.get(fru).setVisited(true);
-			if (this.fruitss.get(fru).getType() == -1) { // banana
-				edge_data e = this.fruitss.get(fru).getEdge();
-				if (e.getSrc() < e.getDest()) {
-					list = (ArrayList<node_data>) this.graph.shortestPath(this.robot.get(i).getSrc(),
-							this.fruitss.get(fru).getEdge().getDest());
-					list.remove(list.size() - 1);
-					this.graph.reverse(list);
-					list.add(this.graph.getGraph().getNode(e.getSrc()));
-				} else { // dest<src
-					list = (ArrayList<node_data>) this.graph.shortestPath(this.robot.get(i).getSrc(),
-							this.fruitss.get(fru).getEdge().getSrc());
-					list.remove(list.size() - 1);
-					this.graph.reverse(list);
-					list.add(this.graph.getGraph().getNode(e.getDest()));
-				}
 
-			} else { // apple
+		} else { // apple
 
-				edge_data e = this.fruitss.get(fru).getEdge();
-				if (e.getSrc() > e.getDest()) {
-					list = (ArrayList<node_data>) this.graph.shortestPath(this.robot.get(i).getSrc(),
-							this.fruitss.get(fru).getEdge().getDest());
-					list.remove(list.size() - 1);
-					this.graph.reverse(list);
-					list.add(this.graph.getGraph().getNode(e.getSrc()));
-				} else { // dest>src
-					list = (ArrayList<node_data>) this.graph.shortestPath(this.robot.get(i).getSrc(),
-							this.fruitss.get(fru).getEdge().getSrc());
-					list.remove(list.size() - 1);
-					this.graph.reverse(list);
-					list.add(this.graph.getGraph().getNode(e.getDest()));
-				}
-
+			edge_data e = this.fruitss.get(fru).getEdge();
+			if (e.getSrc() > e.getDest()) {
+				list = (ArrayList<node_data>) this.graph.shortestPath(this.robot.get(i).getSrc(),
+						this.fruitss.get(fru).getEdge().getDest());
+				list.remove(list.size() - 1);
+				this.graph.reverse(list);
+				list.add(this.graph.getGraph().getNode(e.getSrc()));
+			} else { // dest>src
+				list = (ArrayList<node_data>) this.graph.shortestPath(this.robot.get(i).getSrc(),
+						this.fruitss.get(fru).getEdge().getSrc());
+				list.remove(list.size() - 1);
+				this.graph.reverse(list);
+				list.add(this.graph.getGraph().getNode(e.getDest()));
 			}
-			return list;
 
 		}
+
 		return list;
 
 	}
@@ -778,13 +738,6 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 		this.robot = robot;
 	}
 
-	@Override
-	public void upDateFruit(List<String> f) throws JSONException {
-		setFruit(f);
-		repaint();
-
-	}
-
 	public void manualDrawRobot(game_service game) {
 		this.game = game;
 	}
@@ -793,4 +746,23 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 		this.myKML = myKML;
 	}
 
+	public void setFalseFruit(String i) {
+		this.fruitss.get(i).setToDraw(false);
+	}
+
+	private String closesFruit(int robot_src) {
+		int min = Integer.MAX_VALUE;
+		String ans = null;
+		ArrayList<node_data> temp;
+		for (String fru : this.fruitss.keySet()) {
+			if (this.fruitss.get(fru).isVisited())
+				continue;
+			temp = (ArrayList<node_data>) this.graph.shortestPath(robot_src, this.fruitss.get(fru).getEdge().getDest());
+			if (temp.size() < min) {
+				min = temp.size();
+				ans = fru;
+			}
+		}
+		return ans;
+	}
 }

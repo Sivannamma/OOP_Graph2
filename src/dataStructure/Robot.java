@@ -9,16 +9,19 @@ import utils.Point3D;
 public class Robot {
 	private int id;
 	private double value;
+	private double value_p;
 	private double speed;
 	private int src, dest;
 	private String pos;
 	private Point3D point;
 	private ArrayList<node_data> path;
+	private String fruitKey;
 
 	public Robot() {
 		this.id = -1;
 		this.value = 0;
 		this.speed = 0;
+		this.value_p = 0;
 		this.src = 0;
 		this.dest = 0;
 		this.pos = "";
@@ -26,10 +29,19 @@ public class Robot {
 		this.path = null;
 	}
 
+	public double getValue_p() {
+		return value_p;
+	}
+
+	public void setValue_p(double value_p) {
+		this.value_p = value_p;
+	}
+
 	public Robot(int id, double value, double speed, int src, int dest, String pos) { // constructor
 		this.src = src;
 		this.dest = dest;
 		this.value = value;
+		this.value_p = value;
 		this.id = id;
 		this.pos = pos;
 		this.speed = speed;
@@ -123,6 +135,15 @@ public class Robot {
 
 	public String toString() {
 		return "id: " + id + " value: " + value + "location: " + point.toString();
+	}
+
+	public void setFruitKey(String fru) {
+
+		this.fruitKey = fru;
+	}
+
+	public String getFruitKey() {
+		return fruitKey;
 	}
 
 }
