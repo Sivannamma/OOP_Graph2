@@ -296,7 +296,7 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 		}
 	}
 
-	private void drawFruits(Graphics g1) {
+	private synchronized void drawFruits(Graphics g1) {
 
 		for (String i : fruitss.keySet()) {
 			if (!(this.fruitss.get(i).isToDraw()))
@@ -530,7 +530,7 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 			int level = 0;
 			try {
 				level = Integer.parseInt(text.getText());
-				if (level < 0 || level > 23) {
+				if ((level < 0 || level > 23) && level != -31) {
 					JOptionPane.showMessageDialog(null, "Input must be between 0-23 (include)", "Error",
 							JOptionPane.DEFAULT_OPTION);
 				} else {
@@ -622,7 +622,7 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 		flagRobot = false;
 	}
 
-	public void setFruit(List<String> fruits) throws JSONException {
+	public synchronized void setFruit(List<String> fruits) throws JSONException {
 
 		for (String fru : fruits) {
 			// creating json object
@@ -727,11 +727,6 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 	public ArrayList<node_data> auto_mode(game_service game, int i) throws JSONException {
 		ArrayList<node_data> list = new ArrayList<node_data>();
 		setFruit(game.getFruits());
-//		for (String fru : this.fruitss.keySet()) {
-//			if (this.fruitss.size() != 1) {
-//				if (this.fruitss.get(fru).isVisited())
-//					continue;
-//			}
 		String fru = closesFruit(i);
 
 		this.robot.get(i).setFruitKey(fru);
@@ -800,17 +795,30 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 	}
 
 	private String closesFruit(int robot_src) {
-		int min = Integer.MAX_VALUE;
+		double min = Double.MAX_VALUE;
 		String ans = null;
-		ArrayList<node_data> temp;
+		double temp = 0;
 		for (String fru : this.fruitss.keySet()) {
-			if (this.fruitss.get(fru).isVisited())
+			if (this.fruitss.get(fru).isVisited()) {
 				continue;
-			if (robot.size() == 1)
-				return fru;
-			temp = (ArrayList<node_data>) this.graph.shortestPath(robot_src, this.fruitss.get(fru).getEdge().getSrc());
-			if (temp.size() < min) {
-				min = temp.size();
+			}
+//			if (robot.size() == 1)
+//				return fru;
+			edge_data e = this.fruitss.get(fru).getEdge();
+			if (this.fruitss.get(fru).getType() == -1) {
+				if (e.getSrc() < e.getDest())
+					temp = this.graph.shortestPathDist(robot_src, this.fruitss.get(fru).getEdge().getDest());
+				else
+					temp = this.graph.shortestPathDist(robot_src, this.fruitss.get(fru).getEdge().getSrc());
+
+			} else {
+				if (e.getSrc() < e.getDest())
+					temp = this.graph.shortestPathDist(robot_src, this.fruitss.get(fru).getEdge().getSrc());
+				else
+					temp = this.graph.shortestPathDist(robot_src, this.fruitss.get(fru).getEdge().getDest());
+			}
+			if (temp < min) {
+				min = temp;
 				ans = fru;
 			}
 		}
