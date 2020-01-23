@@ -83,7 +83,7 @@ public class GameClient {
 			}
 			isFirst = false;
 			if (listener != null) {
-				if (System.currentTimeMillis() - start >= (1000 / 10)) {
+				if (System.currentTimeMillis() - start >= (1000 / 8)) {
 					game.move();
 					listener.setRobot(game.getRobots()); // update the location after it moved
 					robot = listener.getRobot();// update the hash map after we moved the robot

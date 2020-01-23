@@ -138,9 +138,12 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 		a_game.addActionListener(this);
 		MenuItem m_game = new MenuItem("Manual Game");
 		m_game.addActionListener(this);
+		MenuItem h_score = new MenuItem("High Score");
+		h_score.addActionListener(this);
 
 		game.add(m_game);
 		game.add(a_game);
+		game.add(h_score);
 		// adding to the menu bar itself
 		menuBar.add(game);
 
@@ -508,6 +511,11 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 
 		String str = e.getActionCommand();
 		switch (str) {
+		case "High Score": {
+			DB db = new DB();
+			db.setVisible(true);
+			break;
+		}
 		case "Manual Game": {
 			gameMode = 1; // setting game mode
 			setUp();

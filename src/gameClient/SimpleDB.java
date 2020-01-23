@@ -26,11 +26,11 @@ public class SimpleDB {
 	public static void main(String[] args) {
 		int id1 = 208479311; // 203306014
 		int level = 0;
-		allUsers();
+		// allUsers();
 		printLog();
-		String kml = getKML(id1, level);
-		System.out.println("***** KML file example: ******");
-		System.out.println(kml);
+		// String kml = getKML(id1, level);
+//		System.out.println("***** KML file example: ******");
+//		System.out.println(kml);
 	}
 
 	/**
@@ -44,8 +44,8 @@ public class SimpleDB {
 			Statement statement = connection.createStatement();
 			String allCustomersQuery = "SELECT * FROM Logs;";
 			ResultSet resultSet = statement.executeQuery(allCustomersQuery);
-
 			while (resultSet.next()) {
+				System.out.println(resultSet.getInt("score"));
 				System.out.println("Id: " + resultSet.getInt("UserID") + "," + resultSet.getInt("levelID") + ","
 						+ resultSet.getInt("moves") + "," + resultSet.getDate("time"));
 			}
