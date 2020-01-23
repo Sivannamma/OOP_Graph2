@@ -56,6 +56,7 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 	JTextField text;
 	JButton button;
 	int count = 1;
+	boolean flagScore = false;
 	boolean isManual = false;
 	Label label;
 	KML_Logger myKML;
@@ -73,7 +74,7 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 	}
 
 	private HashMap<String, Fruit> fruitss;
-	private int gameMode; // - one for manual, two for automatic
+	private int gameMode = 2; // - one for manual, two for automatic
 	private HashMap<Integer, Robot> robot; // hashmap to manage our robots in the movement
 	private boolean setRobots; // when true, we activate the mouse lisiten so the user place the robots
 	private GameServer games;
@@ -105,7 +106,7 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 		paintOnce = true;
 		setRobots = false;
 		fruitss = new HashMap<String, Fruit>();
-		gameMode = 0; // default setting
+		gameMode = 2; // default setting
 		robot = new HashMap<Integer, Robot>();
 		// the size of the window
 		this.setSize(1300, 1200);
@@ -334,6 +335,15 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 				}
 			}
 		}
+		if (flagScore && !game.isRunning()) {
+			try {
+				games = setGameServer(game, games);
+				JOptionPane.showMessageDialog(null, "Game Over, Score : " + games.getGrade(), "Robots",
+						JOptionPane.DEFAULT_OPTION);
+			} catch (JSONException e1) {
+				e1.printStackTrace();
+			}
+		}
 		if (flagSrcDest) {
 			label.setText("Click a robot");
 
@@ -395,12 +405,15 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 		while (!list.isEmpty()) {
 
 			if (!list.isEmpty()) {
+
 				game.chooseNextEdge(src_R2.getId(), list.get(0).getKey());
 				updateGUI(game.getRobots(), game.getFruits());
+				isOnTheWay(list.get(0).getKey(), src_R2.getSrc());
 				game.move();
 				updateGUI(game.getRobots(), game.getFruits());
 				list.remove(0);
 			}
+
 			while (this.robot.get(src_R2.getId()).getDest() != -1) { // as long the robot didnt reach the next node
 				game.move();
 				if (System.currentTimeMillis() - start >= (1000 / 8)) {
@@ -412,7 +425,33 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 
 		}
 		label.setText("Click a robot");
+	}
 
+	private void isOnTheWay(int goTo, int i) {
+		for (String fru : this.fruitss.keySet()) {
+			edge_data e = this.fruitss.get(fru).getEdge();
+			if (this.fruitss.get(fru).getType() == 1) { // apple
+				if (e.getSrc() < e.getDest()) {
+					if (i == e.getSrc() && e.getDest() == goTo) {
+						this.fruitss.get(fru).setToDraw(false);
+					}
+				} else {
+					if (i == e.getDest() && e.getSrc() == goTo) {
+						this.fruitss.get(fru).setToDraw(false);
+					}
+				}
+			} else {
+				if (e.getSrc() > e.getDest()) {
+					if (i == e.getSrc() && e.getDest() == goTo) {
+						this.fruitss.get(fru).setToDraw(false);
+					}
+				} else {
+					if (i == e.getDest() && e.getSrc() == goTo) {
+						this.fruitss.get(fru).setToDraw(false);
+					}
+				}
+			}
+		}
 	}
 
 	private void setManualRobot(List<String> robots) throws JSONException {
@@ -520,6 +559,7 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 					"You can start moving the robots. \n Click a robot, and then click the destination", "Play",
 					JOptionPane.DEFAULT_OPTION);
 			game.startGame();
+			flagScore = true;
 			button.setVisible(false);
 			label.setVisible(true);
 
@@ -567,8 +607,8 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 				robot.get(id).setSrc(src);
 				robot.get(id).setPos(pos);
 				robot.get(id).setValue(value);
-
-				myKML.PlaceMark("robot", robot.get(id).getLocation());
+				if (gameMode == 2)
+					myKML.PlaceMark("robot", robot.get(id).getLocation());
 			}
 		}
 		flagRobot = false;
@@ -589,11 +629,12 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 			if (!fruitss.containsKey(pos))
 				fruitss.put(pos, new Fruit(value, type, pos));
 
-			if (fruitss.get(pos).getType() == 1) {
-				myKML.PlaceMark("apple", fruitss.get(pos).getLocation());
-			} else
-				myKML.PlaceMark("banana", fruitss.get(pos).getLocation());
-
+			if (gameMode == 2) {
+				if (fruitss.get(pos).getType() == 1) {
+					myKML.PlaceMark("apple", fruitss.get(pos).getLocation());
+				} else
+					myKML.PlaceMark("banana", fruitss.get(pos).getLocation());
+			}
 		}
 
 		connect_fruitsAndEdge(); // calling the function to connect the fruits to the right place
@@ -757,12 +798,33 @@ public class MyGameGUI extends JFrame implements ActionListener, MouseListener, 
 		for (String fru : this.fruitss.keySet()) {
 			if (this.fruitss.get(fru).isVisited())
 				continue;
-			temp = (ArrayList<node_data>) this.graph.shortestPath(robot_src, this.fruitss.get(fru).getEdge().getDest());
+			if (robot.size() == 1)
+				return fru;
+			temp = (ArrayList<node_data>) this.graph.shortestPath(robot_src, this.fruitss.get(fru).getEdge().getSrc());
 			if (temp.size() < min) {
 				min = temp.size();
 				ans = fru;
 			}
 		}
 		return ans;
+	}
+
+	int county = 0;
+
+	public ArrayList<node_data> circle(int i) {
+		ArrayList<node_data> list = new ArrayList<node_data>();
+		int temp = this.robot.get(i).getSrc();
+		if (temp == 0) {
+			temp = 10;
+			county++;
+		} else if (county == 3) {
+			list.add(this.graph.getGraph().getNode(0));
+			list.add(this.graph.getGraph().getNode(1));
+			county = 0;
+		} else
+			temp--;
+		list.add(this.graph.getGraph().getNode(temp));
+		return list;
+
 	}
 }

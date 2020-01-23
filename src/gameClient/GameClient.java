@@ -26,7 +26,7 @@ public class GameClient {
 	// private graph g;
 
 	public GameClient(int level, KML_Logger myKML) throws JSONException {
-		// Game_Server.login(208479311);
+		Game_Server.login(208479311);
 		game = Game_Server.getServer(level); // setting the level that the user choose
 		this.graph = new Graph_Algo(new DGraph(game.getGraph()));
 		list = new ArrayList<node_data>();
@@ -45,6 +45,7 @@ public class GameClient {
 		listener.setGraphFromClient(graph);
 		listener.setFruit(game.getFruits());
 		setRobotSrc();
+		// game.addRobot(4);
 		listener.updateGUI(game.getRobots(), game.getFruits()); // paint the robots and the fruits
 		listener.setKML(this.myKML);
 		robot = listener.getRobot(); // first initiallize of the robots in the hash
@@ -62,6 +63,7 @@ public class GameClient {
 					if (!isFirst)
 						listener.setFalseFruit(this.robot.get(i).getFruitKey());
 					list = listener.auto_mode(game, i); // getting the path for the robot
+					// list = listener.circle(i);
 					this.robot.get(i).setPath(list);
 				}
 				if (list.isEmpty()) {

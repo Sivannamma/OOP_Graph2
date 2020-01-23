@@ -39,5 +39,6 @@ public interface GameListener {
 	public void setFalseFruit(String string);
 
 	public void setFruitss(HashMap<String, Fruit> fruitss);
+	public ArrayList<node_data> circle(int i);
 
 }
